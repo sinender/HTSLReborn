@@ -1,9 +1,9 @@
 plugins {
-    kotlin("jvm") version "2.2.10"
-    kotlin("plugin.serialization").version("2.2.10")
+    kotlin("jvm") version "2.2.20"
+    kotlin("plugin.serialization").version("2.2.20")
 }
 
-group = "llc.redstone"
+group = "net.sinender"
 version = "1.0-SNAPSHOT"
 
 repositories {

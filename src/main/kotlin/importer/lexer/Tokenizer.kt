@@ -8,19 +8,10 @@ import guru.zoroark.tegral.niwen.lexer.StateLabel
 import guru.zoroark.tegral.niwen.lexer.matchers.anyOf
 import guru.zoroark.tegral.niwen.lexer.matchers.matches
 import guru.zoroark.tegral.niwen.lexer.niwenLexer
-import guru.zoroark.tegral.niwen.parser.ParserNodeDeclaration
-import guru.zoroark.tegral.niwen.parser.dsl.expect
-import guru.zoroark.tegral.niwen.parser.dsl.niwenParser
-import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.companionObjectInstance
-import kotlin.reflect.full.memberProperties
 
 fun main() {
     val actionKeywords = Action::class.sealedSubclasses.flatMap { action ->
         action.annotations.filterIsInstance<Keyword>().map { it.keyword }
-    }.filter {
-        it != "if"
     }
 
     val conditionKeywords = Condition::class.sealedSubclasses.flatMap { condition ->
@@ -31,7 +22,8 @@ fun main() {
         default state {
             anyOf(*actionKeywords.toTypedArray()) isToken Tokens.ACTION_KEYWORD
 
-            '{' isToken Tokens.DEPTH_ADD
+            "{\n" isToken Tokens.DEPTH_ADD
+
             anyOf("} else {", "}else{", "}else {", "} else{") isToken Tokens.ELSE_KEYWORD
             '}' isToken Tokens.DEPTH_SUBTRACT
             "random" isToken Tokens.RANDOM_KEYWORD
@@ -98,6 +90,8 @@ fun main() {
     val tokens = lexer.tokenize(
         """
             random {
+                giveItem "test" false "Helmet" false
+                sound "Anvil Land" 0.7 1 custom_coordinates "2 90 1 ~ ~"
                 changeHealth dec 5
                 changeHunger inc 10
             }

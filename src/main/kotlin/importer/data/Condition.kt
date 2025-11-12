@@ -2,6 +2,8 @@
 
 package dev.wekend.housingtoolbox.feature.importer.data
 
+import dev.wekend.housingtoolbox.feature.importer.data.enums.Permission
+import dev.wekend.housingtoolbox.feature.importer.data.enums.PotionEffect
 import dev.wekend.housingtoolbox.feature.importer.lexar.Comparators
 import dev.wekend.housingtoolbox.feature.importer.lexar.Operators
 import dev.wekend.housingtoolbox.feature.importer.lexar.Tokens
@@ -64,60 +66,6 @@ sealed class Condition(
                             } ?: error("Unknown Comparison: ${token.string}")
                         }
 
-                        "PotionEffect" -> {
-                            val token = iterator.next()
-                            PotionEffect.entries.find { it.key == token.string }
-                                ?: error("Unknown PotionEffect: ${token.string}")
-                        }
-
-                        "GameMode" -> {
-                            val token = iterator.next()
-                            GameMode.entries.find { it.key == token.string }
-                                ?: error("Unknown GameMode: ${token.string}")
-                        }
-
-                        "Permission" -> {
-                            val token = iterator.next()
-                            Permission.entries.find { it.key == token.string }
-                                ?: error("Unknown Permission: ${token.string}")
-                        }
-
-                        "ItemCheck" -> {
-                            val token = iterator.next()
-                            ItemCheck.entries.find { it.key == token.string }
-                                ?: error("Unknown ItemCheck: ${token.string}")
-                        }
-
-                        "ItemAmount" -> {
-                            val token = iterator.next()
-                            ItemAmount.entries.find { it.key == token.string }
-                                ?: error("Unknown ItemAmount: ${token.string}")
-                        }
-
-                        "InventoryLocation" -> {
-                            val token = iterator.next()
-                            InventoryLocation.entries.find { it.key == token.string }
-                                ?: error("Unknown InventoryLocation: ${token.string}")
-                        }
-
-                        "FishingEnvironment" -> {
-                            val token = iterator.next()
-                            dev.wekend.housingtoolbox.feature.importer.data.FishingEnvironment.entries.find { it.key == token.string }
-                                ?: error("Unknown FishingEnvironment: ${token.string}")
-                        }
-
-                        "PortalType" -> {
-                            val token = iterator.next()
-                            dev.wekend.housingtoolbox.feature.importer.data.PortalType.entries.find { it.key == token.string }
-                                ?: error("Unknown PortalType: ${token.string}")
-                        }
-
-                        "DamageCause" -> {
-                            val token = iterator.next()
-                            dev.wekend.housingtoolbox.feature.importer.data.DamageCause.entries.find { it.key == token.string }
-                                ?: error("Unknown DamageCause: ${token.string}")
-                        }
-
                         else -> error("Unsupported parameter type: ${prop.returnType.jvmErasure.simpleName} in Condition ${clazz.simpleName}")
                     }
 
@@ -133,8 +81,6 @@ sealed class Condition(
 
     var inverted = false
 
-    @Serializable
-    @SerialName("IN_GROUP")
     @Keyword("hasGroup")
     data class RequiredGroup(
         @SerialName("required_group")
@@ -174,21 +120,17 @@ sealed class Condition(
         val holder = VariableHolder.Global
     }
 
-    @Serializable
-    @SerialName("HAS_PERMISSION")
     @Keyword("hasPermission")
     data class HasPermission(
         @SerialName("required_permission")
         val permission: Permission,
     ) : Condition("HAS_PERMISSION")
-    @Serializable
-    @SerialName("IN_REGION")
+    
     @Keyword("inRegion")
     data class InRegion(
         val region: String,
     ) : Condition("IN_REGION")
-    @Serializable
-    @SerialName("HAS_ITEM")
+    
     @Keyword("hasItem")
     data class HasItem(
         val item: ItemStack,
@@ -196,107 +138,90 @@ sealed class Condition(
         @SerialName("where_to_check") val whereToCheck: InventoryLocation,
         @SerialName("required_amount") val amount: ItemAmount,
     ) : Condition("HAS_ITEM")
-    @Serializable
-    @SerialName("IN_PARKOUR")
+    
     @Keyword("doingParkour")
     data object InParkour : Condition("IN_PARKOUR")
-    @Serializable
-    @SerialName("POTION_EFFECT")
+    
     @Keyword("hasPotion")
     data class RequiredEffect(
         val effect: PotionEffect,
     ) : Condition("POTION_EFFECT")
-    @Serializable
-    @SerialName("SNEAKING")
+    
     @Keyword("isSneaking")
     data object PlayerSneaking : Condition("SNEAKING")
-    @Serializable
-    @SerialName("FLYING")
+    
     @Keyword("isFlying")
     data object PlayerFlying : Condition("FLYING")
-    @Serializable
-    @SerialName("HEALTH")
+    
     @Keyword("health")
     data class RequiredHealth(
         val mode: Comparison,
         val amount: StatValue,
     ) : Condition("HEALTH")
-    @Serializable
-    @SerialName("MAX_HEALTH")
+    
     @Keyword("maxHealth")
     data class RequiredMaxHealth(
         val mode: Comparison,
         val amount: StatValue,
     ) : Condition("MAX_HEALTH")
-    @Serializable
-    @SerialName("HUNGER_LEVEL")
+    
     @Keyword("hunger")
     data class RequiredHungerLevel(
         val mode: Comparison,
         val amount: StatValue,
     ) : Condition("HUNGER_LEVEL")
-    @Serializable
-    @SerialName("GAMEMODE")
+    
     @Keyword("gamemode")
     data class RequiredGameMode(
         @SerialName("required_gamemode")
         val gameMode: GameMode
     ) : Condition("GAMEMODE")
-    @Serializable
-    @SerialName("PLACEHOLDER_NUMBER")
+    
     @Keyword("placeholder")
     data class RequiredPlaceholderNumber(
         val placeholder: String,
         val mode: Comparison,
         val amount: StatValue,
     ) : Condition("PLACEHOLDER_NUMBER")
-    @Serializable
-    @SerialName("IN_TEAM")
+    
     @Keyword("inTeam")
     data class RequiredTeam(
         @SerialName("required_team")
         val team: String,
     ) : Condition("IN_TEAM")
-    @Serializable
-    @SerialName("PVP_ENABLED")
+    
     @Keyword("canPvp")
     data object PvpEnabled : Condition("PVP_ENABLED")
-    @Serializable
-    @SerialName("FISHING_ENVIRONMENT")
+    
     @Keyword("fishingEnv")
     data class FishingEnvironment(
         val environment: dev.wekend.housingtoolbox.feature.importer.data.FishingEnvironment
     ) : Condition("FISHING_ENVIRONMENT")
-    @Serializable
-    @SerialName("PORTAL_TYPE")
+    
     @Keyword("portal")
     data class PortalType(
         @SerialName("portal_type")
         val type: dev.wekend.housingtoolbox.feature.importer.data.PortalType
     ) : Condition("PORTAL_TYPE")
-    @Serializable
-    @SerialName("DAMAGE_CAUSE")
+    
     @Keyword("damageCause")
     data class DamageCause(
         val cause: dev.wekend.housingtoolbox.feature.importer.data.DamageCause
     ) : Condition("DAMAGE_CAUSE")
-    @Serializable
-    @SerialName("DAMAGE_AMOUNT")
+    
     @Keyword("damageAmount")
     data class RequiredDamageAmount(
         val mode: Comparison,
         val amount: StatValue,
     ) : Condition("DAMAGE_AMOUNT")
-    @Serializable
-    @SerialName("BLOCK_TYPE")
+    
     @Keyword("blockType")
     data class BlockType(
         val item: ItemStack,
         @SerialName("match_type_only")
         val matchTypeOnly: Boolean,
     ) : Condition("BLOCK_TYPE")
-    @Serializable
-    @SerialName("IS_ITEM")
+    
     @Keyword("isItem")
     data class IsItem(
         val item: ItemStack,
@@ -314,93 +239,64 @@ enum class Comparison {
     @SerialName("LESS_THAN_OR_EQUAL") Le;
 }
 
-@Serializable(with = KeyedSerializer::class)
-enum class Permission(override val key: String) : Keyed {
-    Fly("Fly"),
-    WoodDoor("Wood Door"),
-    IronDoor("Iron Door"),
-    WoodTrapDoor("Wood Trap Door"),
-    IronTrapDoor("Iron Trap Door"),
-    FenceGate("Fence Gate"),
-    Button("Button"),
-    Lever("Lever"),
-    UseLaunchPads("Use Launch Pads"),
-    Tp("/tp"),
-    TpOtherPlayers("/tp Other Players"),
-    Jukebox("Jukebox"),
-    Kick("Kick"),
-    Ban("Ban"),
-    Mute("Mute"),
-    PetSpawning("Pet Spawning"),
-    Build("Build"),
-    OfflineBuild("Offline Build"),
-    Fluid("Fluid"),
-    ProTools("Pro Tools"),
-    UseChests("Use Chests"),
-    UseEnderChests("Use Ender Chests"),
-    ItemEditor("Item Editor"),
-    SwitchGameMode("Switch Game Mode"),
-    EditStats("Edit Stats"),
-    ChangePlayerGroup("Change Player Group"),
-    ChangeGameRules("Change Gamerules"),
-    HousingMenu("Housing Menu"),
-    TeamChatSpy("Team Chat Spy"),
-    EditActions("Edit Actions"),
-    EditRegions("Edit Regions"),
-    EditScoreboard("Edit Scoreboard"),
-    EditEventActions("Edit Event Actions"),
-    EditCommands("Edit Commands"),
-    EditFunctions("Edit Functions"),
-    EditInventoryLayouts("Edit Inventory Layouts"),
-    EditTeams("Edit Teams"),
-    EditCustomMenus("Edit Custom Menus"),
-    ItemMailbox("Item: Mailbox"),
-    ItemEggHunt("Item: Egg Hunt"),
-    ItemTeleportPad("Item: Teleport Pad"),
-    ItemLaunchPad("Item: Launch Pad"),
-    ItemActionPad("Item: Action Pad"),
-    ItemHologram("Item: Hologram"),
-    ItemNPC("Item: NPCs"),
-    ItemActionButton("Item: Action Button"),
-    ItemLeaderboard("Item: Leaderboard"),
-    ItemTrashCan("Item: Trash Can"),
-    ItemBiomeStick("Item: Biome Stick");
-}
-
-@Serializable(with = KeyedSerializer::class)
 enum class ItemCheck(override val key: String) : Keyed {
     ItemType("Item Type"),
     Metadata("Metadata");
+
+    companion object {
+        fun fromKey(key: String): ItemCheck? {
+            return entries.find { it.key.equals(key, ignoreCase = true) }
+        }
+    }
 }
 
-@Serializable(with = KeyedSerializer::class)
 enum class ItemAmount(override val key: String) : Keyed {
     Any("Any Amount"),
     Ge("Equal or Greater Amount");
+
+    companion object {
+        fun fromKey(key: String): ItemAmount? {
+            return entries.find { it.key.equals(key, ignoreCase = true) }
+        }
+    }
 }
 
-@Serializable(with = KeyedSerializer::class)
 enum class InventoryLocation(override val key: String) : Keyed {
     Hand("Hand"),
     Armor("Armor"),
     HotBar("Hotbar"),
     Inventory("Inventory"),
     Anywhere("Anywhere");
+
+    companion object {
+        fun fromKey(key: String): InventoryLocation? {
+            return entries.find { it.key.equals(key, ignoreCase = true) }
+        }
+    }
 }
 
-@Serializable(with = KeyedSerializer::class)
 enum class FishingEnvironment(override val key: String) : Keyed {
     Water("Water"),
     Lava("Lava");
+
+    companion object {
+        fun fromKey(key: String): FishingEnvironment? {
+            return entries.find { it.key.equals(key, ignoreCase = true) }
+        }
+    }
 }
 
-@Serializable(with = KeyedSerializer::class)
 enum class PortalType(override val key: String) : Keyed {
     EndPortal("End Portal"),
-    NetherPortal("Nether Portal")
+    NetherPortal("Nether Portal");
+
+    companion object {
+        fun fromKey(key: String): PortalType? {
+            return entries.find { it.key.equals(key, ignoreCase = true) }
+        }
+    }
 }
 
-@Serializable(with = KeyedSerializer::class)
 enum class DamageCause(override val key: String) : Keyed {
     EntityAttack("Entity Attack"),
     Projectile("Projectile"),
@@ -413,4 +309,10 @@ enum class DamageCause(override val key: String) : Keyed {
     Starvation("Starvation"),
     Poison("Poison"),
     Thorns("Thorns");
+    
+    companion object {
+        fun fromKey(key: String): DamageCause? {
+            return entries.find { it.key.equals(key, ignoreCase = true) }
+        }
+    }
 }
