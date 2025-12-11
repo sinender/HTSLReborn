@@ -3,7 +3,7 @@
   "id": "${id}",
   "version": "${version}",
   "name": "${name}",
-  "description": "Library that abstracts Hypixel Housing's systems for other mods to use.",
+  "description": "Fabric mod that makes programming in Hypixel Housing easier.",
   "authors": [
     "Wekend",
     "Sin_ender"
