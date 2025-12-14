@@ -29,11 +29,11 @@ object LocationParser {
                 val relPitch = pitchPart?.startsWith("~") ?: false
                 val relYaw = yawPart?.startsWith("~") ?: false
 
-                val x = xPart.removePrefix("~").toDoubleOrNull()
-                val y = yPart.removePrefix("~").toDoubleOrNull()
-                val z = zPart.removePrefix("~").toDoubleOrNull()
-                val pitch = pitchPart?.removePrefix("~")?.toFloatOrNull()
-                val yaw = yawPart?.removePrefix("~")?.toFloatOrNull()
+                val x = xPart.removePrefix("~").toDoubleOrNull() ?: 0.0
+                val y = yPart.removePrefix("~").toDoubleOrNull() ?: 0.0
+                val z = zPart.removePrefix("~").toDoubleOrNull() ?: 0.0
+                val pitch = pitchPart?.removePrefix("~")?.toFloatOrNull() ?: 0f
+                val yaw = yawPart?.removePrefix("~")?.toFloatOrNull() ?: 0f
 
                 Location.Custom(
                     relX = relX,

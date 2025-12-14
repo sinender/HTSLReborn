@@ -9,7 +9,6 @@ base.archivesName = property("mod.id") as String
 
 repositories {
     mavenLocal()
-
     /**
      * Restricts dependency search of the given [groups] to the [maven URL][url],
      * improving the setup speed.
@@ -43,16 +42,17 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${property("deps.fabric_language_kotlin")}")
     modImplementation("com.terraformersmc:modmenu:${property("deps.modmenu")}")
     modImplementation("dev.isxander:yet-another-config-lib:${property("deps.yacl")}")
-    include(modImplementation("llc.redstone:SystemsAPI:0.0.2+1.21.9")!!)
+    modImplementation("llc.redstone:SystemsAPI:0.0.8+1.21.9")
 
     implementation("com.github.shynixn.mccoroutine:mccoroutine-fabric-api:2.22.0")
     implementation("com.github.shynixn.mccoroutine:mccoroutine-fabric-core:2.22.0")
 
     implementation(tegralLibs.niwen.lexer)
 
-    fapi("fabric-lifecycle-events-v1", "fabric-resource-loader-v0", "fabric-content-registries-v0")
+    fapi("fabric-lifecycle-events-v1", "fabric-resource-loader-v0", "fabric-content-registries-v0", "fabric-command-api-v2")
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.1")
+
 }
 
 loom {

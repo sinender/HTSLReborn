@@ -4,6 +4,7 @@
   "package": "llc.redstone.htslreborn.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ScreenRenderMixin"
   ],
   "injectors": {
     "defaultRequire": 1

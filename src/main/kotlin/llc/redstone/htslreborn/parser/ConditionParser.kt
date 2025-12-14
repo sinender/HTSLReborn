@@ -11,6 +11,7 @@ import llc.redstone.htslreborn.tokenizer.Comparators
 import llc.redstone.htslreborn.tokenizer.Tokens
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.NbtSizeTracker
+import net.minecraft.nbt.StringNbtReader
 import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.File
@@ -90,13 +91,9 @@ object ConditionParser {
                     val relativeFileLocation = token.string
                     val parent = if (file.isDirectory) file else file.parentFile
                     val nbtString = File(parent, relativeFileLocation).readText()
-                    val input = ByteArrayInputStream(nbtString.toByteArray(Charset.forName("UTF-8")))
-                    val dataIn = DataInputStream(input)
-
-                    val element = NbtIo.read(dataIn, NbtSizeTracker.ofUnlimitedBytes()).asCompound().getOrNull()
 
                     ItemStack(
-                        nbt = element,
+                        nbt = StringNbtReader.readCompound(nbtString),
                         relativeFileLocation = relativeFileLocation,
                     )
                 }

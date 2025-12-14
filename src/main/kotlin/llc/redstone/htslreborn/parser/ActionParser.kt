@@ -7,6 +7,7 @@ import llc.redstone.htslreborn.tokenizer.Operators
 import llc.redstone.htslreborn.tokenizer.Tokens
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.NbtSizeTracker
+import net.minecraft.nbt.StringNbtReader
 import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.File
@@ -75,6 +76,7 @@ object ActionParser {
         for (param in constructor.parameters) {
             val prop = clazz.memberProperties.find { it.name == param.name }!!
 
+            if (!iterator.hasNext()) continue
             val token = iterator.next()
             //End of action
             if (token.tokenType == Tokens.NEWLINE) continue
@@ -95,6 +97,13 @@ object ActionParser {
                         else -> error("Unknown StatValue token: ${token.string}")
                     }
                 }
+                InventorySlot::class -> {
+                    //TODO: Different slot names
+                    when (token.tokenType) {
+                        Tokens.INT -> InventorySlot(token.string.toInt())
+                        else -> error("Unknown InventorySlot token: ${token.string}")
+                    }
+                }
 
                 Location::class -> LocationParser.parse(token.string, iterator)
 
@@ -102,13 +111,9 @@ object ActionParser {
                     val relativeFileLocation = token.string
                     val parent = if (file.isDirectory) file else file.parentFile
                     val nbtString = File(parent, relativeFileLocation).readText()
-                    val input = ByteArrayInputStream(nbtString.toByteArray(Charset.forName("UTF-8")))
-                    val dataIn = DataInputStream(input)
-
-                    val element = NbtIo.read(dataIn, NbtSizeTracker.ofUnlimitedBytes()).asCompound().getOrNull()
 
                     ItemStack(
-                        nbt = element,
+                        nbt = StringNbtReader.readCompound(nbtString),
                         relativeFileLocation = relativeFileLocation,
                     )
                 }
