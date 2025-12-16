@@ -8,9 +8,13 @@ import llc.redstone.systemsapi.data.Keyed
 import llc.redstone.systemsapi.data.StatValue
 import guru.zoroark.tegral.niwen.lexer.Token
 import llc.redstone.htslreborn.tokenizer.Comparators
+import llc.redstone.htslreborn.tokenizer.Tokenizer
+import llc.redstone.htslreborn.tokenizer.Tokenizer.TokenWithPosition
 import llc.redstone.htslreborn.tokenizer.Tokens
+import llc.redstone.htslreborn.utils.ErrorUtils.htslCompileError
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.NbtSizeTracker
+import net.minecraft.nbt.StringNbtReader
 import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.File
@@ -57,7 +61,7 @@ object ConditionParser {
         "inRegion" to InRegion::class,
     )
 
-    fun createCondition(keyword: String, iterator: Iterator<Token>, file: File, inverted: Boolean = false): Condition? {
+    fun createCondition(keyword: String, iterator: Iterator<TokenWithPosition>, file: File, inverted: Boolean = false): Condition? {
         val clazz = keywords[keyword] ?: return null
 
         val constructor = clazz.primaryConstructor ?: return null
@@ -90,13 +94,9 @@ object ConditionParser {
                     val relativeFileLocation = token.string
                     val parent = if (file.isDirectory) file else file.parentFile
                     val nbtString = File(parent, relativeFileLocation).readText()
-                    val input = ByteArrayInputStream(nbtString.toByteArray(Charset.forName("UTF-8")))
-                    val dataIn = DataInputStream(input)
-
-                    val element = NbtIo.read(dataIn, NbtSizeTracker.ofUnlimitedBytes()).asCompound().getOrNull()
 
                     ItemStack(
-                        nbt = element,
+                        nbt = StringNbtReader.readCompound(nbtString),
                         relativeFileLocation = relativeFileLocation,
                     )
                 }
@@ -120,10 +120,10 @@ object ConditionParser {
                 val companion = prop.returnType.classifier
                     .let { it as? kotlin.reflect.KClass<*> }
                     ?.companionObjectInstance
-                    ?: error("No companion object for keyed enum: ${prop.returnType}")
+                    ?: htslCompileError("No companion object for keyed enum: ${prop.returnType}", token)
 
                 val getByKeyMethod = companion::class.members.find { it.name == "fromKey" }
-                    ?: error("No getByKey method for keyed enum: ${prop.returnType}")
+                    ?: htslCompileError("No getByKey method for keyed enum: ${prop.returnType}", token)
 
                 args[param] = getByKeyMethod.call(companion, token)
             }

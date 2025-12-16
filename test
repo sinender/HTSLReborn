@@ -1,1 +1,0 @@
-{components:{"minecraft:custom_name":{extra:[{color:"green",text:"Game Menu "},{color:"gray",text:"(Right Click)"}],italic:0b,text:""},"minecraft:lore":[{extra:[{color:"gray",text:"Right Click to bring up the Game Menu!"}],italic:0b,text:""}]},count:1,id:"minecraft:compass"}

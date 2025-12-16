@@ -5,11 +5,13 @@ import llc.redstone.systemsapi.data.Action.Conditional
 import llc.redstone.systemsapi.data.Action.RandomAction
 import llc.redstone.systemsapi.data.Condition
 import guru.zoroark.tegral.niwen.lexer.Token
+import llc.redstone.htslreborn.tokenizer.Tokenizer
+import llc.redstone.htslreborn.tokenizer.Tokenizer.TokenWithPosition
 import llc.redstone.htslreborn.tokenizer.Tokens
 import java.io.File
 
 object Parser {
-    fun parse(tokens: List<Token>, file: File): MutableMap<String, List<Action>> {
+    fun parse(tokens: List<TokenWithPosition>, file: File): MutableMap<String, List<Action>> {
         val compiledActions = mutableListOf<Action>()
         val gotoCompiled = mutableMapOf<String, List<Action>?>()
 
@@ -43,6 +45,15 @@ object Parser {
                         "event" -> {
                             val name = iterator.next().string
                             "event $name"
+                        }
+                        "menu" -> {
+                            val name = iterator.next().string
+                            val slot = iterator.next().string.toInt()
+                            "menu $name $slot"
+                        }
+                        "command" -> {
+                            val name = iterator.next().string
+                            "command $name"
                         }
                         else -> error("Unexpected token type $type")
                     }
