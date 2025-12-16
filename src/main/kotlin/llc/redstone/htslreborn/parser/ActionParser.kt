@@ -4,7 +4,11 @@ import llc.redstone.systemsapi.data.*
 import llc.redstone.systemsapi.data.Action.*
 import guru.zoroark.tegral.niwen.lexer.Token
 import llc.redstone.htslreborn.tokenizer.Operators
+import llc.redstone.htslreborn.tokenizer.Tokenizer
+import llc.redstone.htslreborn.tokenizer.Tokenizer.TokenWithPosition
 import llc.redstone.htslreborn.tokenizer.Tokens
+import llc.redstone.htslreborn.utils.ErrorUtils.htslCompileError
+import llc.redstone.htslreborn.utils.ItemConvertUtils
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.NbtSizeTracker
 import net.minecraft.nbt.StringNbtReader
@@ -20,7 +24,6 @@ object ActionParser {
     val keywords = mapOf(
         "applyLayout" to ApplyInventoryLayout::class,
         "applyPotion" to ApplyPotionEffect::class,
-        "balanceTeam" to BalancePlayerTeam::class,
         "cancelEvent" to CancelEvent::class,
         "globalstat" to GlobalVariable::class,
         "globalvar" to GlobalVariable::class,
@@ -65,7 +68,7 @@ object ActionParser {
         "displayNametag" to ToggleNametagDisplay::class,
     )
 
-    fun createAction(keyword: String, iterator: Iterator<Token>, file: File): Action? {
+    fun createAction(keyword: String, iterator: Iterator<TokenWithPosition>, file: File): Action? {
         //Get the action class
         val clazz = keywords[keyword] ?: return null
 
@@ -73,7 +76,22 @@ object ActionParser {
 
         val args: MutableMap<KParameter, Any?> = mutableMapOf()
 
-        for (param in constructor.parameters) {
+        val parameters = constructor.parameters.toMutableList()
+
+        fun swapParams(name: String, name2: String) {
+            val index1 = parameters.indexOfFirst { it.name == name }
+            val index2 = parameters.indexOfFirst { it.name == name2 }
+            if (index1 != -1 && index2 != -1) {
+                val temp = parameters[index1]
+                parameters[index1] = parameters[index2]
+                parameters[index2] = temp
+            }
+        }
+
+        if (clazz == ChangeHunger::class || clazz == ChangeMaxHealth::class || clazz == ChangeHealth::class) swapParams("amount", "op")
+        if (clazz == TeamVariable::class) swapParams("teamName", "variable")
+
+        for (param in parameters) {
             val prop = clazz.memberProperties.find { it.name == param.name }!!
 
             if (!iterator.hasNext()) continue
@@ -81,80 +99,86 @@ object ActionParser {
             //End of action
             if (token.tokenType == Tokens.NEWLINE) continue
 
-            args[param] = when (prop.returnType.classifier) {
-                String::class -> token.string
-                Int::class -> token.string.toInt()
-                Long::class -> token.string.removeSuffix("L").toLong()
-                Double::class -> token.string.removeSuffix("D").toDouble()
-                Boolean::class -> token.string.toBoolean()
-                //Stat Values
-                StatValue::class -> {
-                    when (token.tokenType) {
-                        Tokens.STRING -> StatValue.Str(token.string)
-                        Tokens.INT -> StatValue.I32(token.string.toInt())
-                        Tokens.LONG -> StatValue.Lng(token.string.removeSuffix("L").toLong())
-                        Tokens.DOUBLE -> StatValue.Dbl(token.string.removeSuffix("D").toDouble())
-                        else -> error("Unknown StatValue token: ${token.string}")
+            try {
+                args[param] = when (prop.returnType.classifier) {
+                    String::class -> token.string
+                    Int::class -> token.string.toInt()
+                    Long::class -> token.string.removeSuffix("L").toLong()
+                    Double::class -> token.string.removeSuffix("D").toDouble()
+                    Boolean::class -> token.string.toBoolean()
+                    //Stat Values
+                    StatValue::class -> {
+                        when (token.tokenType) {
+                            Tokens.STRING -> StatValue.Str(token.string)
+                            Tokens.INT -> StatValue.I32(token.string.toInt())
+                            Tokens.LONG -> StatValue.Lng(token.string.removeSuffix("L").toLong())
+                            Tokens.DOUBLE -> StatValue.Dbl(token.string.removeSuffix("D").toDouble())
+                            else -> error("Unknown StatValue token: ${token.string}")
+                        }
                     }
-                }
-                InventorySlot::class -> {
-                    //TODO: Different slot names
-                    when (token.tokenType) {
-                        Tokens.INT -> InventorySlot(token.string.toInt())
-                        else -> error("Unknown InventorySlot token: ${token.string}")
+
+                    Location::class -> LocationParser.parse(token.string, iterator)
+
+                    ItemStack::class -> {
+                        val relativeFileLocation = token.string
+                        val parent = if (file.isDirectory) file else file.parentFile
+                        val file = File(parent, relativeFileLocation)
+                        val nbt = if (!file.exists()) {
+                            try {
+                                ItemConvertUtils.stringToNbtCompound(relativeFileLocation)
+                            } catch (e: Exception) {
+                                error("ItemStack file not found: ${file.absolutePath}")
+                            }
+                        } else {
+                            ItemConvertUtils.fileToNbtCompound(file)
+                        }
+
+                        ItemStack(
+                            nbt = nbt,
+                            relativeFileLocation = relativeFileLocation,
+                        )
                     }
+
+                    StatOp::class -> when (token.tokenType) {
+                        Operators.SET -> StatOp.Set
+                        Operators.INCREMENT -> StatOp.Inc
+                        Operators.DECREMENT -> StatOp.Dec
+                        Operators.MULTIPLY -> StatOp.Mul
+                        Operators.DIVIDE -> StatOp.Div
+                        Operators.BITWISE_AND -> StatOp.BitAnd
+                        Operators.BITWISE_OR -> StatOp.BitOr
+                        Operators.BITWISE_XOR -> StatOp.BitXor
+                        Operators.LEFT_SHIFT -> StatOp.LS
+                        Operators.LOGICAL_RIGHT_SHIFT -> StatOp.LRS
+                        Operators.ARITHMETIC_RIGHT_SHIFT -> StatOp.ARS
+                        else -> error("Unknown StatOp: ${token.string}")
+                    }
+
+                    InventorySlot::class -> InventorySlot.fromKey(token.string)
+                    else -> null
                 }
 
-                Location::class -> LocationParser.parse(token.string, iterator)
-
-                ItemStack::class -> {
-                    val relativeFileLocation = token.string
-                    val parent = if (file.isDirectory) file else file.parentFile
-                    val nbtString = File(parent, relativeFileLocation).readText()
-
-                    ItemStack(
-                        nbt = StringNbtReader.readCompound(nbtString),
-                        relativeFileLocation = relativeFileLocation,
-                    )
+                if (args.containsKey(param) && args[param] != null) {
+                    continue
                 }
 
-                StatOp::class -> when (token.tokenType) {
-                    Operators.SET -> StatOp.Set
-                    Operators.INCREMENT -> StatOp.Inc
-                    Operators.DECREMENT -> StatOp.Dec
-                    Operators.MULTIPLY -> StatOp.Mul
-                    Operators.DIVIDE -> StatOp.Div
-                    Operators.BITWISE_AND -> StatOp.BitAnd
-                    Operators.BITWISE_OR -> StatOp.BitOr
-                    Operators.BITWISE_XOR -> StatOp.BitXor
-                    Operators.LEFT_SHIFT -> StatOp.LS
-                    Operators.LOGICAL_RIGHT_SHIFT -> StatOp.LRS
-                    Operators.ARITHMETIC_RIGHT_SHIFT -> StatOp.ARS
-                    else -> error("Unknown StatOp: ${token.string}")
+                if (prop.returnType.isSubtypeOf(Keyed::class.starProjectedType)) {
+                    val companion = prop.returnType.classifier
+                        .let { it as? kotlin.reflect.KClass<*> }
+                        ?.companionObjectInstance
+                        ?: error("No companion object for keyed enum: ${prop.returnType}")
+
+                    val getByKeyMethod = companion::class.members.find { it.name == "fromKey" }
+                        ?: error("No getByKey method for keyed enum: ${prop.returnType}")
+
+                    args[param] = getByKeyMethod.call(companion, token.string)
                 }
 
-
-                else -> null
-            }
-
-            if (args.containsKey(param) && args[param] != null) {
-                continue
-            }
-
-            if (prop.returnType.isSubtypeOf(Keyed::class.starProjectedType)) {
-                val companion = prop.returnType.classifier
-                    .let { it as? kotlin.reflect.KClass<*> }
-                    ?.companionObjectInstance
-                    ?: error("No companion object for keyed enum: ${prop.returnType}")
-
-                val getByKeyMethod = companion::class.members.find { it.name == "fromKey" }
-                    ?: error("No getByKey method for keyed enum: ${prop.returnType}")
-
-                args[param] = getByKeyMethod.call(companion, token.string)
+            } catch (e: Exception) {
+                htslCompileError("Failed to parse action parameter '${param.name}': ${e.message}", token)
             }
         }
 
-        println(args.values.joinToString(","))
         if (args.size != constructor.parameters.size) {
             clazz.constructors.forEach { newCon ->
                 if (constructor.parameters.size == newCon.parameters.size) {

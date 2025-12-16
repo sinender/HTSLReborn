@@ -2,9 +2,11 @@ package llc.redstone.htslreborn.parser
 
 import llc.redstone.systemsapi.data.Location
 import guru.zoroark.tegral.niwen.lexer.Token
+import llc.redstone.htslreborn.tokenizer.Tokenizer
+import llc.redstone.htslreborn.tokenizer.Tokenizer.TokenWithPosition
 
 object LocationParser {
-    fun parse(str: String, iterator: Iterator<Token>): Location =
+    fun parse(str: String, iterator: Iterator<TokenWithPosition>): Location =
         when (str.lowercase().replace("_", " ")) {
             "house spawn" -> Location.HouseSpawn
             "current location" -> Location.CurrentLocation

@@ -16,6 +16,8 @@ object HTSLReborn : ClientModInitializer {
     val MC: MinecraftClient
         get() = MinecraftClient.getInstance()
 
+    var importing = false
+
     override fun onInitializeClient() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
