@@ -29,6 +29,7 @@ enum class Tokens: TokenType {
 }
 
 enum class Operators: TokenType {
+    UNSET,
     INCREMENT,
     DECREMENT,
     SET,
@@ -43,6 +44,7 @@ enum class Operators: TokenType {
 }
 
 fun StateBuilder.operatorTokens() {
+    "unset" isToken Operators.UNSET
     "increment" isToken Operators.INCREMENT
     "decrement" isToken Operators.DECREMENT
     "multiply" isToken Operators.MULTIPLY
@@ -53,6 +55,7 @@ fun StateBuilder.operatorTokens() {
     anyOf("mult", "*=") isToken Operators.MULTIPLY
     anyOf("div", "/=") isToken Operators.DIVIDE
     anyOf("and", "&=") isToken Operators.BITWISE_AND
+    anyOf("xor", "^=") isToken Operators.BITWISE_XOR
     anyOf("or", "|=") isToken Operators.BITWISE_OR
     anyOf("leftShift", "shl", "<<=") isToken Operators.LEFT_SHIFT
     anyOf("arithmeticRightShift", "shr", ">>=") isToken Operators.ARITHMETIC_RIGHT_SHIFT

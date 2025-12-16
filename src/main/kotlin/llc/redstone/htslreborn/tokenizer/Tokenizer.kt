@@ -11,7 +11,7 @@ import llc.redstone.htslreborn.parser.ConditionParser
 import java.io.File
 
 object Tokenizer {
-    fun tokenize(file: File): List<Token> {
+    fun tokenize(file: File): List<TokenWithPosition> {
         val actionKeywords = ActionParser.keywords.keys
         val conditionKeywords = ConditionParser.keywords.keys
 
@@ -88,9 +88,26 @@ object Tokenizer {
 
         val fileStr = file.readLines().joinToString("\n")
 
-
         return lexer.tokenize(fileStr)
             .filter { it.tokenType != Tokens.QUOTE } //Filter out unused and wasted tokens
 //            .filter { it.tokenType != Tokens.NEWLINE }
+            .map { token ->
+                TokenWithPosition(
+                    token,
+                    fileStr.take(token.startsAt).count { it == '\n' } + 1,
+                    token.startsAt - fileStr.lastIndexOf('\n', token.startsAt - 1)
+                )
+            }
+    }
+
+    class TokenWithPosition(
+        val token: Token,
+        val line: Int,
+        val column: Int
+    ) {
+        val string = token.string
+        val endsAt = token.endsAt
+        val startsAt = token.startsAt
+        val tokenType = token.tokenType
     }
 }

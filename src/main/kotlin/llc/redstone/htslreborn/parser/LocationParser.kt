@@ -2,9 +2,11 @@ package llc.redstone.htslreborn.parser
 
 import llc.redstone.systemsapi.data.Location
 import guru.zoroark.tegral.niwen.lexer.Token
+import llc.redstone.htslreborn.tokenizer.Tokenizer
+import llc.redstone.htslreborn.tokenizer.Tokenizer.TokenWithPosition
 
 object LocationParser {
-    fun parse(str: String, iterator: Iterator<Token>): Location =
+    fun parse(str: String, iterator: Iterator<TokenWithPosition>): Location =
         when (str.lowercase().replace("_", " ")) {
             "house spawn" -> Location.HouseSpawn
             "current location" -> Location.CurrentLocation
@@ -29,11 +31,11 @@ object LocationParser {
                 val relPitch = pitchPart?.startsWith("~") ?: false
                 val relYaw = yawPart?.startsWith("~") ?: false
 
-                val x = xPart.removePrefix("~").toDoubleOrNull()
-                val y = yPart.removePrefix("~").toDoubleOrNull()
-                val z = zPart.removePrefix("~").toDoubleOrNull()
-                val pitch = pitchPart?.removePrefix("~")?.toFloatOrNull()
-                val yaw = yawPart?.removePrefix("~")?.toFloatOrNull()
+                val x = xPart.removePrefix("~").toDoubleOrNull() ?: 0.0
+                val y = yPart.removePrefix("~").toDoubleOrNull() ?: 0.0
+                val z = zPart.removePrefix("~").toDoubleOrNull() ?: 0.0
+                val pitch = pitchPart?.removePrefix("~")?.toFloatOrNull() ?: 0f
+                val yaw = yawPart?.removePrefix("~")?.toFloatOrNull() ?: 0f
 
                 Location.Custom(
                     relX = relX,
