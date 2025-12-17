@@ -8,7 +8,7 @@ import llc.redstone.htslreborn.tokenizer.Tokenizer.TokenWithPosition
 object LocationParser {
     fun parse(str: String, iterator: Iterator<TokenWithPosition>): Location =
         when (str.lowercase().replace("_", " ")) {
-            "house spawn" -> Location.HouseSpawn
+            "house spawn location", "house spawn" -> Location.HouseSpawn
             "current location" -> Location.CurrentLocation
             "invokers location" -> Location.InvokersLocation
             "custom coordinates" -> {

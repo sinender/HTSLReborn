@@ -8,7 +8,6 @@ version = "${property("mod.version")}+${stonecutter.current.version}"
 base.archivesName = property("mod.id") as String
 
 repositories {
-    mavenLocal()
     /**
      * Restricts dependency search of the given [groups] to the [maven URL][url],
      * improving the setup speed.
@@ -22,6 +21,7 @@ repositories {
     strictMaven("https://maven.terraformersmc.com/", "Terraformers")
     strictMaven("https://maven.isxander.dev/releases", "Xander Maven")
     strictMaven("https://maven.siphalor.de/", "Siphalor's Maven")
+    strictMaven("https://repo.redstone.llc/releases", "Redstone", "llc.redstone")
 
     strictMaven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1", "DevAuth")
 }
@@ -42,7 +42,7 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${property("deps.fabric_language_kotlin")}")
     modImplementation("com.terraformersmc:modmenu:${property("deps.modmenu")}")
     modImplementation("dev.isxander:yet-another-config-lib:${property("deps.yacl")}")
-    modImplementation("llc.redstone:SystemsAPI:0.0.14+1.21.9")
+    modImplementation("llc.redstone:SystemsAPI:0.1.1+1.21.9")
 
     implementation("com.github.shynixn.mccoroutine:mccoroutine-fabric-api:2.22.0")
     implementation("com.github.shynixn.mccoroutine:mccoroutine-fabric-core:2.22.0")

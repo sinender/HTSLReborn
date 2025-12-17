@@ -17,6 +17,7 @@ import java.io.DataInputStream
 import java.io.File
 import java.nio.charset.Charset
 import kotlin.jvm.optionals.getOrNull
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.*
 
@@ -68,16 +69,7 @@ object ActionParser {
         "displayNametag" to ToggleNametagDisplay::class,
     )
 
-    fun createAction(keyword: String, iterator: Iterator<TokenWithPosition>, file: File): Action? {
-        //Get the action class
-        val clazz = keywords[keyword] ?: return null
-
-        val constructor = clazz.primaryConstructor ?: return null
-
-        val args: MutableMap<KParameter, Any?> = mutableMapOf()
-
-        val parameters = constructor.parameters.toMutableList()
-
+    fun handleSwaps(parameters: MutableList<KParameter>, clazz: KClass<out Action>) {
         fun swapParams(name: String, name2: String) {
             val index1 = parameters.indexOfFirst { it.name == name }
             val index2 = parameters.indexOfFirst { it.name == name2 }
@@ -90,6 +82,18 @@ object ActionParser {
 
         if (clazz == ChangeHunger::class || clazz == ChangeMaxHealth::class || clazz == ChangeHealth::class) swapParams("amount", "op")
         if (clazz == TeamVariable::class) swapParams("teamName", "variable")
+    }
+
+    fun createAction(keyword: String, iterator: Iterator<TokenWithPosition>, file: File): Action? {
+        //Get the action class
+        val clazz = keywords[keyword] ?: return null
+
+        val constructor = clazz.primaryConstructor ?: return null
+
+        val args: MutableMap<KParameter, Any?> = mutableMapOf()
+
+        val parameters = constructor.parameters.toMutableList()
+        handleSwaps(parameters, clazz)
 
         for (param in parameters) {
             val prop = clazz.memberProperties.find { it.name == param.name }!!
@@ -125,9 +129,9 @@ object ActionParser {
                         val file = File(parent, relativeFileLocation)
                         val nbt = if (!file.exists()) {
                             try {
-                                ItemConvertUtils.stringToNbtCompound(relativeFileLocation)
+                                ItemConvertUtils.stringToNbtCompound(relativeFileLocation.replace("\\\"", "\""))
                             } catch (e: Exception) {
-                                error("ItemStack file not found: ${file.absolutePath}")
+                                error("Failed to parse ItemStack NBT from string or find file at location: $relativeFileLocation")
                             }
                         } else {
                             ItemConvertUtils.fileToNbtCompound(file)

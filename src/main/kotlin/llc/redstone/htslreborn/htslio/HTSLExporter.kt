@@ -1,16 +1,19 @@
 package llc.redstone.htslreborn.htslio
 
 import llc.redstone.htslreborn.parser.ActionParser
+import llc.redstone.htslreborn.parser.ActionParser.handleSwaps
 import llc.redstone.htslreborn.parser.ConditionParser
 import llc.redstone.systemsapi.data.Action
 import llc.redstone.systemsapi.data.Comparison
 import llc.redstone.systemsapi.data.Condition
+import llc.redstone.systemsapi.data.InventorySlot
 import llc.redstone.systemsapi.data.ItemStack
 import llc.redstone.systemsapi.data.Keyed
+import llc.redstone.systemsapi.data.KeyedLabeled
+import llc.redstone.systemsapi.data.Location
 import llc.redstone.systemsapi.data.PropertyHolder
 import llc.redstone.systemsapi.data.StatOp
 import llc.redstone.systemsapi.data.StatValue
-import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.memberProperties
@@ -26,13 +29,8 @@ object HTSLExporter {
                 properties.add("\"$value\"")
             }
 
-            Int::class, Double::class, Long::class, Boolean::class -> {
+            StatValue::class, Int::class, Double::class, Long::class, Boolean::class -> {
                 properties.add(value.toString())
-            }
-
-            StatValue::class -> {
-                val statValue = value as StatValue
-                properties.add(statValue.toString())
             }
 
             StatOp::class -> {
@@ -53,6 +51,15 @@ object HTSLExporter {
                 }
             }
 
+            Location::class -> {
+                val location = value as Location
+                if (location !is Location.Custom) {
+                    properties.add("\"${location.key}\"")
+                } else {
+                    properties.add("custom_coordinates \"$location\"")
+                }
+            }
+
             Comparison::class -> {
                 val comparison = value as Comparison
                 when (comparison) {
@@ -64,15 +71,26 @@ object HTSLExporter {
                 }
             }
 
+            InventorySlot::class -> {
+                val inventorySlot = value as InventorySlot
+                properties.add("\"${inventorySlot.key}\"")
+            }
+
             ItemStack::class -> {
                 val itemStack = value as ItemStack
-                properties.add(itemStack.nbt.toString())
+                properties.add(
+                    "\"${itemStack.nbt.toString().replace("\"", "\\\"")}\""
+                )
             }
 
             else -> {
                 if (property.returnType.isSubtypeOf(Keyed::class.starProjectedType)) {
                     val keyed = value as Keyed
-                    properties.add(keyed.key)
+                    if (keyed is KeyedLabeled) {
+                        properties.add("\"${keyed.label}\"")
+                    } else {
+                        properties.add("\"${keyed.key}\"")
+                    }
                 } else {
                     properties.add(value.toString()) //More than likely null
                 }
@@ -83,16 +101,15 @@ object HTSLExporter {
     }
 
     fun export(actions: List<Action>): List<String> {
+        for (action in actions) {
+            println("$action")
+        }
         val lines = mutableListOf<String>()
         for (action in actions) {
-            val actionProperties = action.javaClass.kotlin.memberProperties
-            val keyword = ActionParser.keywords.entries.find { it.value == action::class }?.key ?: continue
-            val properties = mutableListOf<String>()
-
             if (action is Action.Conditional) {
                 val conditional = action as Action.Conditional
-                val exportedConditions = HTSLExporter.exportConditions(conditional.conditions)
-                lines.add("if ${if (conditional.matchAnyCondition) "" else "and"} ${exportedConditions.joinToString(", ")} {")
+                val exportedConditions = exportConditions(conditional.conditions)
+                lines.add("if${if (conditional.matchAnyCondition) "" else " and"} (${exportedConditions.joinToString(", ")}) {")
                 val exportedActions = export(conditional.ifActions)
                 lines.addAll(exportedActions.map { "    $it" })
                 if (conditional.elseActions.isNotEmpty()) {
@@ -113,7 +130,23 @@ object HTSLExporter {
                 continue
             }
 
-            for (property in actionProperties) {
+            val actionClass = action::class
+            var constructor = actionClass.primaryConstructor!!
+            var parameters = constructor.parameters.toMutableList()
+
+            handleSwaps(parameters, actionClass)
+
+            var actionProperties = actionClass.memberProperties
+            var newActionProperties = mutableListOf<KProperty1<Action, *>>()
+
+            for (parm in parameters) {
+                newActionProperties.add(actionProperties.find { it.name == parm.name } as KProperty1<Action, *>)
+            }
+
+            val keyword = ActionParser.keywords.entries.find { it.value == action::class }?.key ?: continue
+            val properties = mutableListOf<String>()
+
+            for (property in newActionProperties) {
                 if (property.name == "actionName") continue
                 val value = property.getter.call(action)
                 // Add only the first string, because only conditionals and random actions should have lists
@@ -133,11 +166,20 @@ object HTSLExporter {
     fun exportConditions(conditions: List<Condition>): List<String> {
         val conditionStrings = mutableListOf<String>()
         for (condition in conditions) {
-            val conditionProperties = condition.javaClass.kotlin.memberProperties
+            val conditionClass = condition::class
+            val constructor = conditionClass.primaryConstructor!!
+            val parameters = constructor.parameters.toMutableList()
+
+            val conditionProperties = conditionClass.memberProperties
+            val newConditionProperties = mutableListOf<KProperty1<Condition, *>>()
+
+            for (parm in parameters) {
+                newConditionProperties.add(conditionProperties.find { it.name == parm.name } as KProperty1<Condition, *>)
+            }
             val keyword = ConditionParser.keywords.entries.find { it.value == condition::class }?.key ?: continue
             val properties = mutableListOf<String>()
 
-            for (property in conditionProperties) {
+            for (property in newConditionProperties) {
                 if (property.name == "conditionName" || property.name == "inverted") continue
                 val value = property.getter.call(condition)
                 // Add only the first string, because only conditionals and random actions should have lists
