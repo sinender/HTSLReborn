@@ -41,7 +41,7 @@ dependencies {
 
     modImplementation("io.wispforest:owo-lib:${property("deps.owo")}")
     ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.2.0")
-    modImplementation("llc.redstone:SystemsAPI:${property("deps.systemsapi")}") {
+    modImplementation("llc.redstone:SystemsAPI:c2a7c25+1.21.11") {
         exclude(module = "dynamic-fps")
     }
 

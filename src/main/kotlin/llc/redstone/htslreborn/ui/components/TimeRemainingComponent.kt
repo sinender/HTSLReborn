@@ -1,18 +1,40 @@
 package llc.redstone.htslreborn.ui.components
 
-import io.wispforest.owo.ui.component.LabelComponent
-import io.wispforest.owo.ui.core.OwoUIGraphics
-import llc.redstone.systemsapi.SystemsAPI
+import io.wispforest.owo.ui.component.UIComponents
+import io.wispforest.owo.ui.container.FlowLayout
+import io.wispforest.owo.ui.core.Color
+import io.wispforest.owo.ui.core.HorizontalAlignment
+import io.wispforest.owo.ui.core.Sizing
+import llc.redstone.systemsapi.api.ImportProgress
 import net.minecraft.text.Text
-import kotlin.math.roundToInt
 
-class TimeRemainingComponent : LabelComponent(
-    Text.of("")
+class TimeRemainingComponent(
+    horizontalSizing: Sizing, verticalSizing: Sizing
+) : FlowLayout(
+    horizontalSizing, verticalSizing, Algorithm.VERTICAL
 ) {
-    override fun draw(graphics: OwoUIGraphics, mouseX: Int, mouseY: Int, partialTicks: Float, delta: Float) {
-        if (SystemsAPI.getHousingImporter().getTimeRemaining() != null)
-            text(Text.translatable("htslreborn.importing.timeremaining", SystemsAPI.getHousingImporter().getTimeRemaining()?.roundToInt()))
+    init {
+        init()
+    }
 
-        super.draw(graphics, mouseX, mouseY, partialTicks, delta)
+    fun init() {
+        val progress = ImportProgress.current() ?: return
+
+        val remaining = progress.remainingSeconds
+            ?.let { if (progress.indeterminate) "~%.1fs".format(it) else "%.1fs".format(it) }
+            ?: "--"
+
+        val heading = "${progress.phase} ${(progress.fraction * 100f).toInt()}%  $remaining left"
+        val detail = buildString {
+            append(progress.completedSteps).append('/').append(progress.totalSteps)
+            append("  elapsed ").append("%.1fs".format(progress.elapsedSeconds))
+        }
+
+        this.horizontalAlignment(HorizontalAlignment.CENTER)
+        this.child(UIComponents.label(Text.of(heading)))
+        this.child(ProgressBarComponent(Sizing.fixed(180), Sizing.fixed(8), progress.fraction))
+        this.child(UIComponents.label(Text.of(detail)).apply {
+            this.color(Color.ofArgb(0xFFAAAAAA.toInt()))
+        })
     }
 }

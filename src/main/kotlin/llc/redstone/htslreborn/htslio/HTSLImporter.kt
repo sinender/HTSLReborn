@@ -155,7 +155,6 @@ object HTSLImporter {
                 )
 
                 UIErrorToast.report("Import cancelled.")
-                SystemsAPI.getHousingImporter().setImporting(false)
                 onComplete()
             } catch (e: Exception) {
                 if (HTSLReborn.CONFIG.playCompleteSound) MC.player?.playSound(
@@ -164,7 +163,6 @@ object HTSLImporter {
                     0.8f
                 )
                 UIErrorToast.report(e)
-                SystemsAPI.getHousingImporter().setImporting(false)
                 e.printStackTrace()
                 onComplete()
             } finally {

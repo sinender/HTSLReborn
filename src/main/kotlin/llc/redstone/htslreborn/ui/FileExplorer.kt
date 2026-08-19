@@ -318,6 +318,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
         val accessor =
             (MC.currentScreen as? HandledScreenAccessor) ?: throw IllegalStateException("Could not get accessor")
         val label = UIComponents.label(display)
+        val timeRemaining = TimeRemainingComponent(Sizing.expand(), Sizing.content())
         val cancelButton = UIComponents.button(Text.translatable("htslreborn.importing.working.cancel")) {
             SystemsAPI.getHousingImporter().cancelImport()
             hideWorkingScreen()
@@ -340,6 +341,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
             children(
                 listOf(
                     label,
+                    timeRemaining,
                     cancelButton
                 )
             )
