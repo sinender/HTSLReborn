@@ -11,8 +11,8 @@ import io.wispforest.owo.ui.core.Sizing
 import io.wispforest.owo.ui.core.UIComponent
 import llc.redstone.htslreborn.ui.FileExplorer
 import llc.redstone.htslreborn.ui.FileExplorerHandler
-import net.minecraft.client.gui.Click
-import net.minecraft.util.Identifier
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.resources.Identifier
 
 abstract class ExplorerEntryComponent(
     horizontalSizing: Sizing, verticalSizing: Sizing, open val index: Int
@@ -84,7 +84,7 @@ abstract class ExplorerEntryComponent(
         if (FileExplorer.INSTANCE.focus == this) this.drawFocusHighlight(graphics, mouseX, mouseY, partialTicks, delta)
     }
 
-    override fun onMouseDown(click: Click, doubled: Boolean): Boolean {
+    override fun onMouseDown(click: MouseButtonEvent, doubled: Boolean): Boolean {
         if (FileExplorer.INSTANCE.focus == this) {
             FileExplorer.INSTANCE.focus = null
         } else {

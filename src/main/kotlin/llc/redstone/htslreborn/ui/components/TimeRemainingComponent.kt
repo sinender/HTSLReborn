@@ -6,7 +6,7 @@ import io.wispforest.owo.ui.core.Color
 import io.wispforest.owo.ui.core.HorizontalAlignment
 import io.wispforest.owo.ui.core.Sizing
 import llc.redstone.systemsapi.api.ImportProgress
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 
 class TimeRemainingComponent(
     horizontalSizing: Sizing, verticalSizing: Sizing
@@ -31,9 +31,9 @@ class TimeRemainingComponent(
         }
 
         this.horizontalAlignment(HorizontalAlignment.CENTER)
-        this.child(UIComponents.label(Text.of(heading)))
+        this.child(UIComponents.label(Component.literal(heading)))
         this.child(ProgressBarComponent(Sizing.fixed(180), Sizing.fixed(8), progress.fraction))
-        this.child(UIComponents.label(Text.of(detail)).apply {
+        this.child(UIComponents.label(Component.literal(detail)).apply {
             this.color(Color.ofArgb(0xFFAAAAAA.toInt()))
         })
     }

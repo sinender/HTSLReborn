@@ -13,10 +13,10 @@ import llc.redstone.htslreborn.htslio.HTSLImporter
 import llc.redstone.htslreborn.ui.FileExplorer
 import llc.redstone.htslreborn.ui.FileHandler
 import llc.redstone.systemsapi.importer.ActionContainer
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import java.nio.file.Path
 import kotlin.io.path.deleteExisting
@@ -25,13 +25,13 @@ import kotlin.io.path.name
 class ScriptEntryComponent(
     horizontalSizing: Sizing, verticalSizing: Sizing, override val index: Int, val path: Path
 ) : ExplorerEntryComponent(horizontalSizing, verticalSizing, index) {
-    override val icon: Identifier = Identifier.of("htslreborn", "textures/ui/file_explorer/script_icon.png")
+    override val icon: Identifier = Identifier.fromNamespaceAndPath("htslreborn", "textures/ui/file_explorer/script_icon.png")
     override fun buildContextButtons(): List<UIComponent> {
         val import = UIContainers.horizontalFlow(Sizing.content(), Sizing.fill()).apply {
             children(
                 listOf(
                     UIComponents.button(
-                        Text.translatable("htslreborn.explorer.button.script.import")
+                        Component.translatable("htslreborn.explorer.button.script.import")
                     ) {
                         handleScriptClick()
                     }.apply {
@@ -40,9 +40,9 @@ class ScriptEntryComponent(
                             HtslConfigModel.ImportStrategy.REPLACE -> "htslreborn.explorer.button.script.import.replace.description"
 //                            HtslConfigModel.ImportStrategy.UPDATE -> "htslreborn.explorer.button.script.import.update.description"
                         }
-                        setTooltip(Tooltip.of(Text.translatable(tooltipKey)))
+                        setTooltip(Tooltip.create(Component.translatable(tooltipKey)))
                     },
-                    UIComponents.button(Text.of("↓")) {
+                    UIComponents.button(Component.literal("↓")) {
                         val base = FileExplorer.INSTANCE.base
                         val dropdown = base.childById(DropdownComponent::class.java, "importDropdown")
                         if (dropdown == null)  {
@@ -54,30 +54,30 @@ class ScriptEntryComponent(
                 ))
         }
 
-        val export = UIComponents.button(Text.translatable("htslreborn.explorer.button.script.export")) {
+        val export = UIComponents.button(Component.translatable("htslreborn.explorer.button.script.export")) {
             FileExplorer.INSTANCE.showWorkingScreen(FileExplorer.WorkingScreenType.EXPORT, path.name)
             exportingFile = path
             HTSLExporter.exportFile(path) {
                 FileExplorer.INSTANCE.hideWorkingScreen()
             }
         }.apply {
-            setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.script.export.description")))
+            setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.script.export.description")))
         }
 
         val spacer = UIComponents.spacer()
 
-        val open = UIComponents.button(Text.of("✎")) {
-            Util.getOperatingSystem().open(path)
+        val open = UIComponents.button(Component.literal("✎")) {
+            Util.getPlatform().openPath(path)
         }.apply {
             sizing(Sizing.fixed(20), Sizing.fill())
-            setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.script.open.description")))
+            setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.script.open.description")))
         }
 
-        val delete = UIComponents.button(Text.of("\uD83D\uDDD1")) {
+        val delete = UIComponents.button(Component.literal("\uD83D\uDDD1")) {
             DeleteConfirmationComponent.handleDeleteClick()
         }.apply {
             sizing(Sizing.fixed(20), Sizing.fill())
-            setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.script.delete.description")))
+            setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.script.delete.description")))
         }
 
         return listOf(
@@ -103,7 +103,7 @@ class ScriptEntryComponent(
         }
     }
 
-    override fun onMouseDown(click: Click, doubled: Boolean): Boolean {
+    override fun onMouseDown(click: MouseButtonEvent, doubled: Boolean): Boolean {
         if (doubled) {
             handleScriptClick()
             return true

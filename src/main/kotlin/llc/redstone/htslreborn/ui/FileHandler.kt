@@ -2,7 +2,7 @@ package llc.redstone.htslreborn.ui
 
 import llc.redstone.htslreborn.HTSLReborn
 import llc.redstone.htslreborn.utils.ItemUtils
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import java.nio.file.Path
 import kotlin.io.path.*
 

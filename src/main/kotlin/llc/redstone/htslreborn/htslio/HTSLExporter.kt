@@ -11,7 +11,7 @@ import llc.redstone.htslreborn.utils.UIErrorToast
 import llc.redstone.htslreborn.utils.UISuccessToast
 import llc.redstone.systemsapi.SystemsAPI
 import llc.redstone.systemsdata.*
-import net.minecraft.sound.SoundEvents
+import net.minecraft.sounds.SoundEvents
 import java.nio.file.Path
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.io.path.createDirectories
@@ -52,7 +52,7 @@ object HTSLExporter {
                 path.writeText(lines.joinToString("\n"))
 
                 if (HTSLReborn.CONFIG.playCompleteSound) MC.player?.playSound(
-                    SoundEvents.BLOCK_NOTE_BLOCK_BELL.value(),
+                    SoundEvents.NOTE_BLOCK_BELL.value(),
                     1.0f,
                     1.0f
                 )
@@ -63,7 +63,7 @@ object HTSLExporter {
                 onComplete(false)
             } catch (e: Exception) {
                 if (HTSLReborn.CONFIG.playCompleteSound) MC.player?.playSound(
-                    SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value(),
+                    SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(),
                     1.0f,
                     0.8f
                 )

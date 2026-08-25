@@ -12,8 +12,8 @@ import llc.redstone.htslreborn.HTSLReborn.importingFile
 import llc.redstone.htslreborn.htslio.HTSLImporter
 import llc.redstone.htslreborn.ui.FileExplorer
 import llc.redstone.systemsapi.importer.ActionContainer
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.text.Text
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.network.chat.Component
 import kotlin.io.path.name
 
 class DropdownComponent(
@@ -28,29 +28,29 @@ class DropdownComponent(
             padding(Insets.of(2))
             children(
                 listOf(
-                    UIComponents.button(Text.translatable("htslreborn.explorer.button.script.import.add")) {
+                    UIComponents.button(Component.translatable("htslreborn.explorer.button.script.import.add")) {
                         click(it)
                     }.apply {
                         id("add")
                         horizontalSizing(Sizing.fill())
                         renderer(ButtonComponent.Renderer.flat(0x00000000, 0x50000000, 0x00000000))
-                        setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.script.import.add.description")))
+                        setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.script.import.add.description")))
                     },
-                    UIComponents.button(Text.translatable("htslreborn.explorer.button.script.import.replace")) {
+                    UIComponents.button(Component.translatable("htslreborn.explorer.button.script.import.replace")) {
                         click(it)
                     }.apply {
                         id("replace")
                         horizontalSizing(Sizing.fill())
                         renderer(ButtonComponent.Renderer.flat(0x00000000, 0x50000000, 0x00000000))
-                        setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.script.import.replace.description")))
+                        setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.script.import.replace.description")))
                     },
-//                    UIComponents.button(Text.translatable("htslreborn.explorer.button.script.import.update")) {
+//                    UIComponents.button(Component.translatable("htslreborn.explorer.button.script.import.update")) {
 //                        click(it)
 //                    }.apply {
 //                        id("update")
 //                        horizontalSizing(Sizing.fill())
 //                        renderer(ButtonComponent.Renderer.flat(0x00000000, 0x50000000, 0x00000000))
-//                        setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.script.import.update.description")))
+//                        setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.script.import.update.description")))
 //                    },
                 )
             )

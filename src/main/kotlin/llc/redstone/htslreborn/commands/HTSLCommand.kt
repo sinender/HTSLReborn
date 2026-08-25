@@ -7,10 +7,16 @@ import llc.redstone.htslreborn.htslio.HTSLImporter
 import llc.redstone.htslreborn.ui.FileHandler
 import llc.redstone.htslreborn.utils.ItemUtils.giveItem
 import llc.redstone.htslreborn.utils.ItemUtils.saveItem
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
+//? if <26.1 {
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
+
+//?} else {
+/*import net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument
+*///?}
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -64,13 +70,13 @@ object HTSLCommand {
 
         try {
             val item = context.source.player.giveItem(file)
-            context.source.sendFeedback(Text.translatable(
+            context.source.sendFeedback(Component.translatable(
                 "htslreborn.command.item.give.success",
-                item.name
+                item.hoverName
             ))
             return 1
         } catch (e: IllegalStateException) {
-            context.source.sendError(Text.translatable(
+            context.source.sendError(Component.translatable(
                 "htslreborn.command.item.give.fail",
                 file.pathString
             ))
@@ -85,13 +91,13 @@ object HTSLCommand {
 
         try {
             val item = context.source.player.saveItem(file)
-            context.source.sendFeedback(Text.translatable(
+            context.source.sendFeedback(Component.translatable(
                 "htslreborn.command.item.save.success",
-                item.name, file.pathString
+                item.hoverName, file.pathString
             ))
             return 1
         } catch (e: IllegalStateException) {
-            context.source.sendError(Text.translatable(
+            context.source.sendError(Component.translatable(
                 "htslreborn.command.item.save.fail",
                 file.pathString
             ))
@@ -106,13 +112,13 @@ object HTSLCommand {
 
         try {
             file.deleteExisting()
-            context.source.sendFeedback(Text.translatable(
+            context.source.sendFeedback(Component.translatable(
                 "htslreborn.command.item.delete.success",
                 file.pathString
             ))
             return 1
         } catch (e: Exception) {
-            context.source.sendError(Text.translatable(
+            context.source.sendError(Component.translatable(
                 "htslreborn.command.item.delete.fail",
                 file.pathString
             ))

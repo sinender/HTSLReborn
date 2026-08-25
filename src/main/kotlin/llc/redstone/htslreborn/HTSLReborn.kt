@@ -8,7 +8,9 @@ import llc.redstone.htslreborn.ui.FileHandler
 import llc.redstone.htslreborn.utils.RenderUtils.isInitialized
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.player.Player
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -17,16 +19,24 @@ import kotlin.io.path.Path
 object HTSLReborn : ClientModInitializer {
     const val MOD_ID = "htslreborn"
     val LOGGER: Logger = LoggerFactory.getLogger("HTSL Reborn")
-    const val VERSION = /*$ mod_version*/ "0.0.1"
-    const val MINECRAFT = /*$ minecraft*/ "1.21.11"
+    const val VERSION = /*$ mod_version*/ "0.2.1";
+    const val MINECRAFT = /*$ minecraft*/ "1.21.11";
     val CONFIG: HtslConfig = HtslConfig.createAndLoad();
-    val MC: MinecraftClient
-        get() = MinecraftClient.getInstance()
+    val MC: Minecraft
+        get() = Minecraft.getInstance()
 
     var importing = false
     var importingFile: Path? = null
     var exporting = false
     var exportingFile: Path? = null
+
+    fun Player.sendSystemMessage(comp: Component) {
+        //? if <26.1 {
+        this.displayClientMessage(comp, false)
+        //?} else {
+         /*this.sendSystemMessage(comp)
+        *///?}
+    }
 
     override fun onInitializeClient() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.

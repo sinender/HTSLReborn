@@ -11,7 +11,7 @@ import llc.redstone.systemsdata.Condition.*
 import llc.redstone.systemsdata.Condition.DamageCause
 import llc.redstone.systemsdata.Condition.FishingEnvironment
 import llc.redstone.systemsdata.Condition.PortalType
-import net.minecraft.nbt.StringNbtReader
+import net.minecraft.nbt.TagParser
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readText

@@ -23,13 +23,16 @@ import llc.redstone.htslreborn.ui.FileHandler.refreshFiles
 import llc.redstone.htslreborn.ui.FileHandler.search
 import llc.redstone.htslreborn.ui.components.*
 import llc.redstone.systemsapi.SystemsAPI
-import net.minecraft.client.gui.cursor.Cursor
-import net.minecraft.client.gui.screen.ingame.GenericContainerScreen
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
-import net.minecraft.client.resource.language.I18n
-import net.minecraft.text.Text
+import com.mojang.blaze3d.platform.cursor.CursorType
+//? if >= 26.2 {
+ /*import llc.redstone.systemsapi.screen
+*///? }
+import net.minecraft.client.gui.screens.inventory.ContainerScreen
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.resources.language.I18n
+import net.minecraft.network.chat.Component
 import net.minecraft.util.Util
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
@@ -46,9 +49,9 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
         fun inActionGui(): Boolean {
             if (importing) return true
             if (exporting) return true
-            val screen = MC.currentScreen as? GenericContainerScreen ?: return false
+            val screen = MC.screen as? ContainerScreen ?: return false
             val title = screen.title.string
-            return title.contains(Regex(I18n.translate("htslreborn.action.container.title")))
+            return title.contains(Regex(I18n.get("htslreborn.action.container.title")))
         }
     }
 
@@ -64,12 +67,12 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
         return OwoUIAdapter.create(this, UIContainers::verticalFlow)
     }
 
-    override fun close() {
-        Cursor.DEFAULT.applyTo(MC.window)
+    override fun onClose() {
+        MC.window.selectCursor(CursorType.DEFAULT)
         if (SystemsAPI.getHousingImporter().isImporting()) {
             SystemsAPI.getHousingImporter().cancelImport()
         }
-        super.close()
+        super.onClose()
     }
 
     private fun buildTitle(): UIComponent {
@@ -78,16 +81,16 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
             margins(Insets.of(2))
 
             child(
-                UIComponents.button(Text.literal("-")) {
+                UIComponents.button(Component.literal("-")) {
                     toggleMinimize()
                 }.apply {
                     sizing(Sizing.fixed(16), Sizing.fixed(16))
-                    setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.minimize")))
+                    setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.minimize")))
                 }
             )
 
             child(
-                UIComponents.label(Text.translatable("htslreborn.explorer.title")).apply {
+                UIComponents.label(Component.translatable("htslreborn.explorer.title")).apply {
                     sizing(Sizing.expand(), Sizing.content())
                     horizontalTextAlignment(HorizontalAlignment.CENTER)
                 }
@@ -103,51 +106,51 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
     }
 
     private fun buildMinimizePopout(): UIComponent {
-        return UIComponents.button(Text.literal("□")) {
+        return UIComponents.button(Component.literal("□")) {
             toggleMinimize()
         }.apply {
             sizing(Sizing.fixed(16), Sizing.fixed(16))
-            setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.expand")))
+            setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.expand")))
             positioning(Positioning.absolute(7, 7));
         }
     }
 
     private val searchBox = UIComponents.textBox(Sizing.expand()).apply {
         verticalSizing(Sizing.fill())
-        setPlaceholder(Text.translatable("htslreborn.explorer.search"))
+        setHint(Component.translatable("htslreborn.explorer.search"))
     }
 
-    override fun charTyped(input: CharInput): Boolean {
+    override fun charTyped(input: CharacterEvent): Boolean {
         if (searchBox.isFocused) {
             return searchBox.charTyped(input).also {
-                onSearchChanged(searchBox.text)
+                onSearchChanged(searchBox.value)
             }
         }
         return super.charTyped(input)
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
-        if (input.key == /* ESCAPE */ 256) {
-            MC.currentScreen?.close()
+    override fun keyPressed(input: KeyEvent): Boolean {
+        if (input.key() == /* ESCAPE */ 256) {
+            MC.screen?.onClose()
         }
         if (searchBox.isFocused) {
-            if (input.key == /* E */ 69) {
+            if (input.key() == /* E */ 69) {
                 return true
             }
             return searchBox.keyPressed(input).also {
-                onSearchChanged(searchBox.text)
+                onSearchChanged(searchBox.value)
             }
         }
         return super.keyPressed(input)
     }
 
     private fun buildHeader(): FlowLayout {
-        val openFolderButton = UIComponents.button(Text.of("\uD83D\uDDC0")) {
+        val openFolderButton = UIComponents.button(Component.literal("\uD83D\uDDC0")) {
             val dir = FileHandler.currentDir
-            Util.getOperatingSystem().open(dir)
+            Util.getPlatform().openPath(dir)
         }.apply {
             sizing(Sizing.fixed(20), Sizing.fill())
-            setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.openfolder.description")))
+            setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.openfolder.description")))
         }
 
         return UIContainers.horizontalFlow(Sizing.fill(), Sizing.fixed(20)).apply {
@@ -184,12 +187,12 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
             val icon = UIComponents.texture(this.icon, 0, 0, 16, 16, 16, 16)
             val label = UIComponents.label(
                 if (file == null) {
-                    Text.translatable("htslreborn.explorer.newfile").styled() { it.withBold(true) }
-                        .append(Text.literal("\"$search\"").styled() { it.withBold(false) })
+                    Component.translatable("htslreborn.explorer.newfile").withStyle { it.withBold(true) }
+                        .append(Component.literal("\"$search\"").withStyle { it.withBold(false) })
                 } else {
-                    Text.literal(file.nameWithoutExtension).apply {
+                    Component.literal(file.nameWithoutExtension).apply {
                         if (file.isDirectory()) return@apply
-                        append(Text.literal(".${file.extension}").withColor(0x808080))
+                        append(Component.literal(".${file.extension}").withColor(0x808080))
                     }
                 }
             )
@@ -274,13 +277,13 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
     }
 
     fun breadcrumb(name: String, index: Int): LabelComponent {
-        return UIComponents.label(Text.literal(name)).apply {
+        return UIComponents.label(Component.literal(name)).apply {
             mouseEnter().subscribe {
-                text(Text.literal(name).withColor(0x808080))
+                text(Component.literal(name).withColor(0x808080))
                 cursorStyle(CursorStyle.HAND)
             }
             mouseLeave().subscribe {
-                text(Text.literal(name))
+                text(Component.literal(name))
                 cursorStyle(CursorStyle.POINTER)
             }
             mouseDown().subscribe { _, _ ->
@@ -288,7 +291,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
                 false
             }
             focusLost().subscribe {
-                text(Text.literal(name))
+                text(Component.literal(name))
                 cursorStyle(CursorStyle.POINTER)
             }
         }
@@ -306,7 +309,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
             breadcrumbs.clearChildren()
             val names = (baseDir.nameCount - 1 until subDir.nameCount).map { subDir.getName(it).toString() }
             names.forEachIndexed { index, name ->
-                if (index > 0) breadcrumbs.child(UIComponents.label(Text.literal(">").withColor(0x505050)))
+                if (index > 0) breadcrumbs.child(UIComponents.label(Component.literal(">").withColor(0x505050)))
                 breadcrumbs.child(breadcrumb(name, index))
             }
         }
@@ -314,12 +317,12 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
         if (breadcrumbs.hasParent()) uiAdapter.rootComponent.queue { update() } else update()
     }
 
-    fun buildWorkingScreen(display: Text, type: WorkingScreenType): FlowLayout {
+    fun buildWorkingScreen(display: Component, type: WorkingScreenType): FlowLayout {
         val accessor =
-            (MC.currentScreen as? HandledScreenAccessor) ?: throw IllegalStateException("Could not get accessor")
+            (MC.screen as? HandledScreenAccessor) ?: throw IllegalStateException("Could not get accessor")
         val label = UIComponents.label(display)
         val timeRemaining = TimeRemainingComponent(Sizing.expand(), Sizing.content())
-        val cancelButton = UIComponents.button(Text.translatable("htslreborn.importing.working.cancel")) {
+        val cancelButton = UIComponents.button(Component.translatable("htslreborn.importing.working.cancel")) {
             SystemsAPI.getHousingImporter().cancelImport()
             hideWorkingScreen()
         }
@@ -331,7 +334,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
             gap(5)
             sizing(
                 Sizing.fixed((accessor.getGuiLeft() * HTSLReborn.CONFIG.widthScale).toInt() - 10),
-                Sizing.fixed((MC.window.scaledHeight * HTSLReborn.CONFIG.heightScale).toInt() - 10)
+                Sizing.fixed((MC.window.guiScaledHeight * HTSLReborn.CONFIG.heightScale).toInt() - 10)
             )
 
             mouseDown().subscribe { click, bool ->
@@ -356,7 +359,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
         val importScreen = this.uiAdapter.rootComponent.childById(FlowLayout::class.java, "importScreen")
         if (importScreen != null) return
 
-        val display = Text.translatable(
+        val display = Component.translatable(
             when (type) {
                 WorkingScreenType.IMPORT -> "htslreborn.importing.working.type.import"
                 WorkingScreenType.EXPORT -> "htslreborn.importing.working.type.export"
@@ -375,17 +378,17 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
 
     public override fun build(root: FlowLayout) {
         val accessor =
-            (MC.currentScreen as? HandledScreenAccessor) ?: throw IllegalStateException("Could not get accessor")
+            (MC.screen as? HandledScreenAccessor) ?: throw IllegalStateException("Could not get accessor")
 
         //Needs to be recreated for minimize toggle to work
         base = UIContainers.verticalFlow(Sizing.fill(), Sizing.fill())
 
         root.apply {
-            sizing(Sizing.fixed(accessor.getGuiLeft()), Sizing.fixed(MC.window.scaledHeight))
+            sizing(Sizing.fixed(accessor.getGuiLeft()), Sizing.fixed(MC.window.guiScaledHeight))
             padding(Insets.of(5))
             verticalAlignment(VerticalAlignment.CENTER)
             horizontalAlignment(HorizontalAlignment.RIGHT)
-            gap(((MC.window.scaledHeight * HTSLReborn.CONFIG.heightScale).toInt() - 10) * -1)
+            gap(((MC.window.guiScaledHeight * HTSLReborn.CONFIG.heightScale).toInt() - 10) * -1)
 
             if (isMinimized) {
                 child(buildMinimizePopout())
@@ -397,7 +400,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
                     base.apply {
                         sizing(
                             Sizing.fixed((accessor.getGuiLeft() * HTSLReborn.CONFIG.widthScale).toInt() - 10),
-                            Sizing.fixed((MC.window.scaledHeight * HTSLReborn.CONFIG.heightScale).toInt() - 10)
+                            Sizing.fixed((MC.window.guiScaledHeight * HTSLReborn.CONFIG.heightScale).toInt() - 10)
                         )
 
                         id("base")

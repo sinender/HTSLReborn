@@ -6,10 +6,10 @@ import io.wispforest.owo.ui.core.UIComponent
 import llc.redstone.htslreborn.ui.FileExplorer
 import llc.redstone.htslreborn.ui.FileExplorerHandler.setWatchedDir
 import llc.redstone.htslreborn.ui.FileHandler
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
@@ -18,31 +18,31 @@ import kotlin.io.path.deleteRecursively
 class FolderEntryComponent(
     horizontalSizing: Sizing, verticalSizing: Sizing, override val index: Int, val path: Path
 ) : ExplorerEntryComponent(horizontalSizing, verticalSizing, index) {
-    override val icon: Identifier = Identifier.of("htslreborn", "textures/ui/file_explorer/folder_icon.png")
+    override val icon: Identifier = Identifier.fromNamespaceAndPath("htslreborn", "textures/ui/file_explorer/folder_icon.png")
 
     @OptIn(ExperimentalPathApi::class)
     override fun buildContextButtons(): List<UIComponent> {
-        val open = UIComponents.button(Text.translatable("htslreborn.explorer.button.folder.open")) {
+        val open = UIComponents.button(Component.translatable("htslreborn.explorer.button.folder.open")) {
             handleFolderClick()
         }.apply {
             sizing(Sizing.content(), Sizing.fill())
-            setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.folder.open.description")))
+            setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.folder.open.description")))
         }
 
         val spacer = UIComponents.spacer()
 
-        val openExternal = UIComponents.button(Text.of("✎")) {
-            Util.getOperatingSystem().open(path)
+        val openExternal = UIComponents.button(Component.literal("✎")) {
+            Util.getPlatform().openPath(path)
         }.apply {
             sizing(Sizing.fixed(20), Sizing.fill())
-            setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.folder.openext.description")))
+            setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.folder.openext.description")))
         }
 
-        val delete = UIComponents.button(Text.of("\uD83D\uDDD1")) {
+        val delete = UIComponents.button(Component.literal("\uD83D\uDDD1")) {
             DeleteConfirmationComponent.handleDeleteClick()
         }.apply {
             sizing(Sizing.fixed(20), Sizing.fill())
-            setTooltip(Tooltip.of(Text.translatable("htslreborn.explorer.button.folder.delete.description")))
+            setTooltip(Tooltip.create(Component.translatable("htslreborn.explorer.button.folder.delete.description")))
         }
 
         return listOf(
@@ -61,7 +61,7 @@ class FolderEntryComponent(
         setWatchedDir(FileHandler.currentDir)
     }
 
-    override fun onMouseDown(click: Click, doubled: Boolean): Boolean {
+    override fun onMouseDown(click: MouseButtonEvent, doubled: Boolean): Boolean {
         if (doubled) {
             handleFolderClick()
             return true

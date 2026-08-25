@@ -4,14 +4,18 @@ import io.wispforest.owo.Owo;
 import io.wispforest.owo.ops.TextOps;
 import io.wispforest.owo.ui.core.OwoUIGraphics;
 import io.wispforest.owo.ui.parsing.UIModelLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.toast.Toast;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+//? if <26.1 {
+import net.minecraft.client.gui.GuiGraphics;
+//? } else {
+/*import net.minecraft.client.gui.GuiGraphicsExtractor;
+*///? }
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;
@@ -20,20 +24,24 @@ import java.util.List;
 @ApiStatus.Internal
 public class UISuccessToast implements Toast {
 
-    private final List<OrderedText> errorMessage;
-    private final TextRenderer textRenderer;
+    private final List<FormattedCharSequence> successMessage;
+    private final Font textRenderer;
     private final int width;
 
     public UISuccessToast(String message) {
-        this.textRenderer = MinecraftClient.getInstance().textRenderer;
+        this.textRenderer = Minecraft.getInstance().font;
         var texts = this.initText(message);
         this.width = Math.min(240, TextOps.width(textRenderer, texts) + 8);
-        this.errorMessage = this.wrap(texts);
+        this.successMessage = this.wrap(texts);
     }
 
     public static void report(String message) {
         logErrorsDuringInitialLoad();
-        MinecraftClient.getInstance().getToastManager().add(new UISuccessToast(message));
+        //? if <26.2 {
+        Minecraft.getInstance().getToastManager().addToast(new UISuccessToast(message));
+        //? } else {
+         /*Minecraft.getInstance().gui.toastManager().addToast(new UISuccessToast(message));
+        *///? }
     }
 
     private static void logErrorsDuringInitialLoad() {
@@ -55,53 +63,67 @@ public class UISuccessToast implements Toast {
     }
 
     @Override
-    public Visibility getVisibility() {
+    public Visibility getWantedVisibility() {
         return this.visibility;
     }
 
     @Override
-    public void draw(DrawContext context, TextRenderer textRenderer, long startTime) {
+    //? if <26.1 {
+    public void render(GuiGraphics context, Font textRenderer, long startTime) {
         var owoContext = OwoUIGraphics.of(context);
 
-        owoContext.fill(0, 0, this.getWidth(), this.getHeight(), 0x77000000);
-        owoContext.drawRectOutline(0, 0, this.getWidth(), this.getHeight(), 0xA700FF00);
+        owoContext.fill(0, 0, this.width, this.height(), 0x77000000);
+        owoContext.drawRectOutline(0, 0, this.width(), this.height(), 0xA7FF0000);
 
-        int xOffset = this.getWidth() / 2 - this.textRenderer.getWidth(this.errorMessage.getFirst()) / 2;
-        owoContext.drawTextWithShadow(this.textRenderer, this.errorMessage.getFirst(), 4 + xOffset, 4, 0xFFFFFFFF);
+        int xOffset = this.width() / 2 - this.textRenderer.width(this.successMessage.getFirst()) / 2;
+        owoContext.drawString(this.textRenderer, this.successMessage.getFirst(), 4 + xOffset, 4, 0xFFFFFFFF);
 
-        for (int i = 1; i < this.errorMessage.size(); i++) {
-            owoContext.drawText(this.textRenderer, this.errorMessage.get(i), 4, 4 + i * 11, 0xFFFFFFFF, false);
+        for (int i = 1; i < this.successMessage.size(); i++) {
+            owoContext.drawString(this.textRenderer, this.successMessage.get(i), 4, 4 + i * 11, 0xFFFFFFFF, false);
         }
     }
+    //? } else {
+    /*public void extractRenderState(GuiGraphicsExtractor context, Font textRenderer, long startTime) {
+        var owoContext = OwoUIGraphics.of(context);
+
+        owoContext.fill(0, 0, this.width, this.height(), 0x77000000);
+        owoContext.drawRectOutline(0, 0, this.width(), this.height(), 0xA7FF0000);
+
+        int xOffset = this.width() / 2 - this.textRenderer.width(this.successMessage.getFirst()) / 2;
+        owoContext.text(this.textRenderer, this.successMessage.getFirst(), 4 + xOffset, 4, 0xFFFFFFFF);
+
+        for (int i = 1; i < this.successMessage.size(); i++) {
+            owoContext.text(this.textRenderer, this.successMessage.get(i), 4, 4 + i * 11, 0xFFFFFFFF, false);
+        }
+    }
+    *///? }
 
     @Override
-    public int getHeight() {
-        return 6 + this.errorMessage.size() * 11;
+    public int height() {
+        return 6 + this.successMessage.size() * 11;
     }
 
     @Override
-    public int getWidth() {
+    public int width() {
         return this.width;
     }
 
-    private List<Text> initText(String successMessage) {
-        final var texts = new ArrayList<Text>();
-        texts.add(Text.literal("HTSLReborn success").formatted(Formatting.GREEN));
-        texts.add(Text.literal(" "));
-        texts.add(Text.literal(successMessage));
-
-
+    private List<Component> initText(String successMessage) {
+        final var texts = new ArrayList<Component>();
+        texts.add(Component.literal("HTSLReborn success").withStyle(ChatFormatting.GREEN));
+        texts.add(Component.literal(" "));
+        texts.add(Component.literal(successMessage.substring(0, Math.min(successMessage.length(), 250))).withStyle(ChatFormatting.GRAY));
         return texts;
     }
 
-    private List<OrderedText> wrap(List<Text> message) {
-        var list = new ArrayList<OrderedText>();
-        for (var text : message) list.addAll(this.textRenderer.wrapLines(text, this.getWidth() - 8));
+    private List<FormattedCharSequence> wrap(List<Component> message) {
+        var list = new ArrayList<FormattedCharSequence>();
+        for (var text : message) list.addAll(this.textRenderer.split(text, this.width() - 8));
         return list;
     }
 
     @Override
-    public Object getType() {
+    public Object getToken() {
         return Type.VERY_TYPE;
     }
 

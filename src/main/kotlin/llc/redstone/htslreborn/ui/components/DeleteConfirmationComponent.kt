@@ -12,7 +12,7 @@ import io.wispforest.owo.ui.core.Surface
 import llc.redstone.htslreborn.HTSLReborn.CONFIG
 import llc.redstone.htslreborn.ui.FileExplorer
 import llc.redstone.htslreborn.ui.FileHandler
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import kotlin.io.path.*
 
 class DeleteConfirmationComponent(
@@ -27,24 +27,24 @@ class DeleteConfirmationComponent(
             padding(Insets.of(10))
             children(
                 listOf(
-                    UIComponents.label(Text.translatable("htslreborn.explorer.confirm.delete.title")),
+                    UIComponents.label(Component.translatable("htslreborn.explorer.confirm.delete.title")),
                     UIComponents.spacer(2),
-                    UIComponents.label(Text.translatable("htslreborn.explorer.confirm.delete.message").withColor(0x7E7E7E)),
-                    UIComponents.label(Text.literal(fileName() + "?").withColor(0x7E7E7E)),
+                    UIComponents.label(Component.translatable("htslreborn.explorer.confirm.delete.message").withColor(0x7E7E7E)),
+                    UIComponents.label(Component.literal(fileName() + "?").withColor(0x7E7E7E)),
                     UIComponents.spacer(2),
                     UIContainers.horizontalFlow(Sizing.fill(), Sizing.content()).apply {
                         horizontalAlignment(HorizontalAlignment.CENTER)
                         gap(4)
                         children(
                             listOf(
-                                UIComponents.button(Text.translatable("htslreborn.explorer.confirm.delete.button.cancel")) {
+                                UIComponents.button(Component.translatable("htslreborn.explorer.confirm.delete.button.cancel")) {
                                     click(it)
                                 }.apply {
                                     id("cancel")
                                     horizontalSizing(Sizing.expand(40))
                                     horizontalAlignment(HorizontalAlignment.CENTER)
                                 },
-                                UIComponents.button(Text.translatable("htslreborn.explorer.confirm.delete.button.confirm")) {
+                                UIComponents.button(Component.translatable("htslreborn.explorer.confirm.delete.button.confirm")) {
                                     click(it)
                                 }.apply {
                                     id("confirm")

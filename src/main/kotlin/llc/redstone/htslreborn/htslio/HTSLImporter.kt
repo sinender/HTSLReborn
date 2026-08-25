@@ -5,6 +5,7 @@ import llc.redstone.htslreborn.HTSLReborn
 import llc.redstone.htslreborn.HTSLReborn.MC
 import llc.redstone.htslreborn.HTSLReborn.importing
 import llc.redstone.htslreborn.HTSLReborn.importingFile
+import llc.redstone.htslreborn.HTSLReborn.sendSystemMessage
 import llc.redstone.htslreborn.parser.Parser
 import llc.redstone.htslreborn.parser.PreProcess
 import llc.redstone.htslreborn.tokenizer.Tokenizer
@@ -14,12 +15,15 @@ import llc.redstone.systemsapi.SystemsAPI
 import llc.redstone.systemsapi.api.Event
 import llc.redstone.systemsdata.Action
 import llc.redstone.systemsapi.importer.ActionContainer
+//? if >= 26.2 {
+ /*import llc.redstone.systemsapi.screen
+*///? }
 import llc.redstone.systemsapi.util.CommandUtils
-import net.minecraft.client.MinecraftClient
-import net.minecraft.sound.SoundEvents
-import net.minecraft.text.Text
-import net.minecraft.util.Colors
-import net.minecraft.world.GameMode
+import net.minecraft.client.Minecraft
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.network.chat.Component
+import net.minecraft.world.level.GameType
+import java.awt.Color
 import java.nio.file.Path
 import kotlin.io.path.name
 
@@ -53,24 +57,24 @@ object HTSLImporter {
         onComplete: () -> Unit = {}
     ) {
         if (compiledCode.any { it.first == "base" && it.second.isNotEmpty() } && !supportsBase) {
-            MinecraftClient.getInstance().player?.sendMessage(
-                Text.of("Couldn't use actions before a goto call.").copy().withColor(Colors.RED), false
+            Minecraft.getInstance().player?.sendSystemMessage(
+                Component.literal("Couldn't use actions before a goto call.").copy().withColor(Color.RED.rgb)
             )
             onComplete()
             return
         }
 
         if (supportsBase) {
-            if (MC.currentScreen?.title?.string?.contains(Regex("Edit Actions|Actions: ")) == false) {
-                MinecraftClient.getInstance().player?.sendMessage(
-                    Text.of("You must have an action gui open to import HTSL code.").copy().withColor(Colors.RED), false
+            if (MC.screen?.title?.string?.contains(Regex("Edit Actions|Actions: ")) == false) {
+                Minecraft.getInstance().player?.sendSystemMessage(
+                    Component.literal("You must have an action gui open to import HTSL code.").copy().withColor(Color.RED.rgb)
                 )
                 onComplete()
                 return
             }
         }
 
-        if (MC.player?.gameMode != GameMode.CREATIVE) CommandUtils.runCommand("gmc")
+        if (MC.player?.gameMode() != GameType.CREATIVE) CommandUtils.runCommand("gmc")
 
         //TODO: go through the compiled code and look for anything that doesnt exist yet and prompt the user to create it first
         SystemsAPI.launch {
@@ -96,7 +100,7 @@ object HTSLImporter {
                                 ?: housingImporter.createFunction(args)
                             SystemsAPI.scaledDelay(4.0)
                             if (actions.isNotEmpty()) {
-                                MC.player?.closeScreen()
+                                MC.player?.closeContainer()
                                 val actionContainer = function.getActionContainer()
                                 method(actionContainer, actions)
                             }
@@ -107,7 +111,7 @@ object HTSLImporter {
                                 ?: housingImporter.createCommand(args)
 
                             if (actions.isNotEmpty()) {
-                                MC.player?.closeScreen()
+                                MC.player?.closeContainer()
                                 val actionContainer = command.getActionContainer()
                                 method(actionContainer, actions)
                             }
@@ -140,7 +144,7 @@ object HTSLImporter {
                 }
 
                 if (HTSLReborn.CONFIG.playCompleteSound) MC.player?.playSound(
-                    SoundEvents.BLOCK_NOTE_BLOCK_BELL.value(),
+                    SoundEvents.NOTE_BLOCK_BELL.value(),
                     1.0f,
                     1.0f
                 )
@@ -149,7 +153,7 @@ object HTSLImporter {
             } catch (_: CancellationException) {
 
                 if (HTSLReborn.CONFIG.playCompleteSound) MC.player?.playSound(
-                    SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value(),
+                    SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(),
                     1.0f,
                     0.8f
                 )
@@ -158,7 +162,7 @@ object HTSLImporter {
                 onComplete()
             } catch (e: Exception) {
                 if (HTSLReborn.CONFIG.playCompleteSound) MC.player?.playSound(
-                    SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value(),
+                    SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(),
                     1.0f,
                     0.8f
                 )

@@ -1,6 +1,8 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    kotlin("jvm") version "2.2.10"
-    id("fabric-loom")
+    kotlin("jvm") version "2.3.0"
+    id("dev.kikugie.loom-back-compat")
     id("com.google.devtools.ksp") version "2.3.4"
     `maven-publish`
 }
@@ -8,6 +10,15 @@ plugins {
 group = "llc.redstone"
 version = "${property("mod.version")}+${stonecutter.current.version}"
 base.archivesName = property("mod.id") as String
+
+val requiredJava: JavaVersion = when {
+    stonecutter.current.parsed >= "26.1" -> JavaVersion.VERSION_25
+    stonecutter.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
+    stonecutter.current.parsed >= "1.18" -> JavaVersion.VERSION_17
+    stonecutter.current.parsed >= "1.17" -> JavaVersion.VERSION_16
+    else -> JavaVersion.VERSION_1_8
+}
+
 
 repositories {
     mavenLocal()
@@ -34,14 +45,14 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:${stonecutter.current.version}")
-    mappings("net.fabricmc:yarn:${property("deps.yarn")}:v2")
+    loomx.applyMojangMappings()
     modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${property("deps.fabric_language_kotlin")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
 
     modImplementation("io.wispforest:owo-lib:${property("deps.owo")}")
     ksp("dev.kosmx.kowoconfig:ksp-owo-config:0.2.0")
-    modImplementation("llc.redstone:SystemsAPI:c2a7c25+1.21.11") {
+    modImplementation("llc.redstone:SystemsAPI:${property("deps.systemsapi")}") {
         exclude(module = "dynamic-fps")
     }
 
@@ -72,14 +83,13 @@ loom {
 
 java {
     withSourcesJar()
-    val javaVersion: JavaVersion = JavaVersion.VERSION_21
-    targetCompatibility = javaVersion
-    sourceCompatibility = javaVersion
+    targetCompatibility = requiredJava
+    sourceCompatibility = requiredJava
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        jvmTarget.set(JvmTarget.fromTarget(requiredJava.majorVersion))
     }
     sourceSets {
         val test by getting {
@@ -134,14 +144,6 @@ tasks {
         )
 
         filesMatching("fabric.mod.json") { expand(props) }
-    }
-
-    // Builds the version into a shared folder in `build/libs/${mod version}/`
-    register<Copy>("buildAndCollect") {
-        group = "build"
-        from(remapJar.map { it.archiveFile }, remapSourcesJar.map { it.archiveFile })
-        into(rootProject.layout.buildDirectory.file("libs/${project.property("mod.version")}"))
-        dependsOn("build")
     }
 
     test {

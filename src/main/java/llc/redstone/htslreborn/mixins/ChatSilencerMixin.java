@@ -1,8 +1,8 @@
 package llc.redstone.htslreborn.mixins;
 
 import llc.redstone.htslreborn.HTSLReborn;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.regex.Pattern;
 
-@Mixin(value = ClientPlayNetworkHandler.class, priority = 1001)
+@Mixin(value = ClientPacketListener.class, priority = 1001)
 public class ChatSilencerMixin {
 
     @Unique
@@ -25,11 +25,11 @@ public class ChatSilencerMixin {
     );
 
     @Inject(
-            method = "onGameMessage",
+            method = "handleSystemChat",
             at = @At("HEAD"),
             cancellable = true
     )
-    public void onGameMessage(GameMessageS2CPacket packet, CallbackInfo ci) {
+    public void onGameMessage(ClientboundSystemChatPacket packet, CallbackInfo ci) {
         if (!HTSLReborn.INSTANCE.getCONFIG().getSilenceImportMessages()) return;
         if (!HTSLReborn.INSTANCE.getImporting() && !HTSLReborn.INSTANCE.getExporting()) return;
 
