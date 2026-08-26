@@ -2,6 +2,7 @@ package llc.redstone.htslreborn.ui.components
 
 import io.wispforest.owo.ui.component.UIComponents
 import io.wispforest.owo.ui.container.FlowLayout
+import io.wispforest.owo.ui.container.UIContainers
 import io.wispforest.owo.ui.core.Color
 import io.wispforest.owo.ui.core.HorizontalAlignment
 import io.wispforest.owo.ui.core.Sizing
@@ -21,18 +22,28 @@ class TimeRemainingComponent(
         val progress = ImportProgress.current() ?: return
 
         val remaining = progress.remainingSeconds
-            ?.let { if (progress.indeterminate) "~%.1fs".format(it) else "%.1fs".format(it) }
+            ?.let {
+                val clamped = maxOf(it.toDouble(), 0.0)
+                if (progress.indeterminate) "~%.1fs".format(clamped) else "%.1fs".format(clamped)
+            }
             ?: "--"
 
-        val heading = "${progress.phase} ${(progress.fraction * 100f).toInt()}%  $remaining left"
         val detail = buildString {
-            append(progress.completedSteps).append('/').append(progress.totalSteps)
-            append("  elapsed ").append("%.1fs".format(progress.elapsedSeconds))
+            append(progress.phase.name.lowercase().replaceFirstChar { it.uppercase() })
+            append("   $remaining left")
         }
 
         this.horizontalAlignment(HorizontalAlignment.CENTER)
-        this.child(UIComponents.label(Component.literal(heading)))
-        this.child(ProgressBarComponent(Sizing.fixed(180), Sizing.fixed(8), progress.fraction))
+        this.gap(6)
+        this.child(
+            UIContainers.horizontalFlow(Sizing.fixed(210), Sizing.fixed(8)).apply {
+                this.child(ProgressBarComponent(Sizing.fixed(180), Sizing.fixed(8), progress.fraction))
+                this.child(UIComponents.label(Component.literal(" ${(progress.fraction * 100f).toInt()}%")).apply {
+                    this.color(Color.ofArgb(0xFFAAAAAA.toInt()))
+                })
+            }
+        )
+
         this.child(UIComponents.label(Component.literal(detail)).apply {
             this.color(Color.ofArgb(0xFFAAAAAA.toInt()))
         })
