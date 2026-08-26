@@ -28,10 +28,11 @@ class TimeRemainingComponent(
             }
             ?: "--"
 
-        val detail = buildString {
-            append(progress.phase.name.lowercase().replaceFirstChar { it.uppercase() })
-            append("   $remaining left")
-        }
+        val detail = Component.translatable(
+            "htslreborn.importing.working.detail",
+            Component.translatable("htslreborn.importing.phase.${progress.phase.name.lowercase()}"),
+            remaining
+        )
 
         this.horizontalAlignment(HorizontalAlignment.CENTER)
         this.gap(6)
@@ -44,7 +45,7 @@ class TimeRemainingComponent(
             }
         )
 
-        this.child(UIComponents.label(Component.literal(detail)).apply {
+        this.child(UIComponents.label(detail).apply {
             this.color(Color.ofArgb(0xFFAAAAAA.toInt()))
         })
     }

@@ -89,6 +89,10 @@ object ActionParser {
 
         if (clazz == ChangeHunger::class || clazz == ChangeMaxHealth::class || clazz == ChangeHealth::class) swapParams("amount", "op")
         if (clazz == TeamVariable::class) swapParams("teamName", "variable")
+        if (clazz == DropItem::class) {
+            swapParams("despawnDurationTicks", "prioritizePlayer")
+            swapParams("pickupDelayTicks", "inventoryFallback")
+        }
     }
 
     private fun isStringLike(token: TokenWithPosition): Boolean {

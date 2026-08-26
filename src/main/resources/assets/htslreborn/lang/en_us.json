@@ -50,10 +50,15 @@
   "htslreborn.explorer.confirm.delete.button.cancel": "No",
 
   "htslreborn.importing.button.cancel": "Cancel",
-  "htslreborn.importing.timeremaining": "Time Remaining: %ss",
-  "htslreborn.importing.working.type.import": "Importing '%s'...",
-  "htslreborn.importing.working.type.export": "Exporting to '%s'",
+  "htslreborn.importing.working.detail": "%s   %s left",
+  "htslreborn.importing.working.type.import": "Importing %s...",
+  "htslreborn.importing.working.type.export": "Exporting to %s",
   "htslreborn.importing.working.cancel": "Cancel",
+  "htslreborn.importing.phase.preparing": "Preparing...",
+  "htslreborn.importing.phase.clearing": "Clearing...",
+  "htslreborn.importing.phase.importing": "Importing...",
+  "htslreborn.importing.phase.exporting": "Exporting...",
+  "htslreborn.importing.phase.finishing": "Finishing...",
 
   "text.config.htslreborn.title": "HTSL Reborn",
 

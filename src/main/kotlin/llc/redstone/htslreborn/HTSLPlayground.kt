@@ -8,9 +8,9 @@ import kotlin.io.path.Path
 // Used primarily for testing the tokenizer and preprocessor
 fun main(args: Array<String>) {
     val input = """
-        if (var runner1 != 1) {
-           chat "hello world!"
-        }
+        define stageid 1
+
+        var pb.ms = {"%var.player/s" + stageid + "pb.ms 9223372036854775807%"}
     """.split("\n").joinToString("\n") { it.trim() }
     val tokens = Tokenizer.tokenize(input)
     println("Tokens:")

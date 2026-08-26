@@ -146,7 +146,7 @@ object PreProcess {
 
                         var result = context.evaluateString(scope, processedString, "HTSL_JS_EVAL", token.line, null)
 
-                        if (result is String && result.contains(" ")) {
+                        if (result is String && result.contains(" ") && !result.contains("%")) {
                             result = "\"$result\""
                         }
 
