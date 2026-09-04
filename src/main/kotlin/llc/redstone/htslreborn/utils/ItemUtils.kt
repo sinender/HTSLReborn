@@ -36,7 +36,6 @@ object ItemUtils {
     }
 
     private fun convertSlot(slot: Int): Int? {
-//        if (MC.currentScreen !is ContainerScreen) return slot
         return when (slot) {
             in 0..8 -> slot + 36
             in 9..35 -> slot

@@ -1,5 +1,7 @@
 package llc.redstone.htslreborn.tokenizer
 
+import guru.zoroark.tegral.niwen.lexer.NiwenLexerException
+import guru.zoroark.tegral.niwen.lexer.NiwenLexerNoMatchException
 import guru.zoroark.tegral.niwen.lexer.StateLabel
 import guru.zoroark.tegral.niwen.lexer.Token
 import guru.zoroark.tegral.niwen.lexer.matchers.anyOf
@@ -119,14 +121,22 @@ object Tokenizer {
             placeholderStringState(PLACEHOLDER, null)
             placeholderStringState(PLACEHOLDER_CONDITION, IF_CONDITION)
         }
-        return lexer.tokenize(text)
-            .map { token ->
-                TokenWithPosition(
-                    token,
-                    text.take(token.startsAt).count { it == '\n' } + 1,
-                    token.startsAt - text.lastIndexOf('\n', token.startsAt - 1)
-                )
-            }
+        try {
+            return lexer.tokenize(text)
+                .map { token ->
+                    TokenWithPosition(
+                        token,
+                        text.take(token.startsAt).count { it == '\n' } + 1,
+                        token.startsAt - text.lastIndexOf('\n', token.startsAt - 1)
+                    )
+                }
+        } catch (e: NiwenLexerNoMatchException) {
+            val index = e.message?.substringAfter("index ")?.substringBefore(" (") ?: throw e
+            val position = index.toIntOrNull() ?: throw e
+            val line = text.take(position).count { it == '\n' } + 1
+            val column = position - text.lastIndexOf('\n', position - 1)
+            throw NiwenLexerException("No match at line $line, column $column", e)
+        }
     }
 
     fun tokenize(path: Path): List<TokenWithPosition> {

@@ -243,7 +243,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
 
     fun refreshExplorer(queue: Boolean = false) {
         if (queue) {
-            content.queue { refreshExplorer(false) }
+            uiAdapter.rootComponent.queue { refreshExplorer(false) }
             return
         }
         content.clearChildren()

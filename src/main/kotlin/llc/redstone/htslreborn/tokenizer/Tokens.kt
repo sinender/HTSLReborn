@@ -73,12 +73,12 @@ enum class PlaceholderShortcuts : TokenType {
 }
 
 fun StateBuilder.placeholderShortcuts() {
-    placeholderShortcuts("globalstat +(?:\"([^\"]*)\"|([^ )]*))") isToken PlaceholderShortcuts.GLOBAL_VAR
-    placeholderShortcuts("globalvar +(?:\"([^\"]*)\"|([^ )]*))") isToken PlaceholderShortcuts.GLOBAL_VAR
-    placeholderShortcuts("stat +(?:\"([^\"]*)\"|([^ )]*))") isToken PlaceholderShortcuts.PLAYER_VAR
-    placeholderShortcuts("var +(?:\"([^\"]*)\"|([^ )]*))") isToken PlaceholderShortcuts.PLAYER_VAR
-    placeholderShortcuts("teamstat +([^ )]*)? +(?:\"([^\"]*)\"|([^ )]*))") isToken PlaceholderShortcuts.TEAM_VAR
-    placeholderShortcuts("teamvar +([^ )]*)? +(?:\"([^\"]*)\"|([^ )]*))") isToken PlaceholderShortcuts.TEAM_VAR
+    placeholderShortcuts("globalstat (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.GLOBAL_VAR
+    placeholderShortcuts("globalvar (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.GLOBAL_VAR
+    placeholderShortcuts("stat (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.PLAYER_VAR
+    placeholderShortcuts("var (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.PLAYER_VAR
+    placeholderShortcuts("teamstat +([^ )]*)? (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.TEAM_VAR
+    placeholderShortcuts("teamvar +([^ )]*)? (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.TEAM_VAR
     placeholderShortcuts("randomint +([^ )]*)? +?([^ )]*)?") isToken PlaceholderShortcuts.RANDOM_INT
     placeholderShortcuts("randomdouble +([^ )]*)? +?([^ )]*)?") isToken PlaceholderShortcuts.RANDOM_DOUBLE
     placeholderShortcuts("health") isToken PlaceholderShortcuts.HEALTH
