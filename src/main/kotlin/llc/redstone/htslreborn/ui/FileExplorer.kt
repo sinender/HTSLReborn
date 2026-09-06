@@ -23,12 +23,8 @@ import llc.redstone.htslreborn.ui.FileHandler.refreshFiles
 import llc.redstone.htslreborn.ui.FileHandler.search
 import llc.redstone.htslreborn.ui.components.*
 import llc.redstone.systemsapi.SystemsAPI
-import com.mojang.blaze3d.platform.cursor.CursorType
-//? if >= 26.2 {
- /*import llc.redstone.systemsapi.screen
-*///? }
-import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.screens.inventory.ContainerScreen
 import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.resources.language.I18n
@@ -38,6 +34,10 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
+
+//? if >= 26.2 {
+ /*import llc.redstone.systemsapi.screen
+*///? }
 
 class FileExplorer : BaseOwoScreen<FlowLayout>() {
     companion object {
@@ -61,6 +61,10 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
         }
     }
 
+    fun resetCursor() {
+        uiAdapter?.cursorAdapter?.applyStyle(CursorStyle.NONE)
+    }
+
     var focus: ExplorerEntryComponent? = null
 
     override fun createAdapter(): OwoUIAdapter<FlowLayout?> {
@@ -68,7 +72,7 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
     }
 
     override fun onClose() {
-        MC.window.selectCursor(CursorType.DEFAULT)
+        this.resetCursor()
         if (SystemsAPI.getHousingImporter().isImporting()) {
             SystemsAPI.getHousingImporter().cancelImport()
         }
@@ -278,13 +282,12 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
 
     fun breadcrumb(name: String, index: Int): LabelComponent {
         return UIComponents.label(Component.literal(name)).apply {
+            cursorStyle(CursorStyle.HAND)
             mouseEnter().subscribe {
-                text(Component.literal(name).withColor(0x808080))
-                cursorStyle(CursorStyle.HAND)
+                text(Component.literal(name).withColor(0x808080));
             }
             mouseLeave().subscribe {
                 text(Component.literal(name))
-                cursorStyle(CursorStyle.POINTER)
             }
             mouseDown().subscribe { _, _ ->
                 FileExplorerHandler.onBreadcrumbClicked(index)
@@ -292,7 +295,6 @@ class FileExplorer : BaseOwoScreen<FlowLayout>() {
             }
             focusLost().subscribe {
                 text(Component.literal(name))
-                cursorStyle(CursorStyle.POINTER)
             }
         }
     }

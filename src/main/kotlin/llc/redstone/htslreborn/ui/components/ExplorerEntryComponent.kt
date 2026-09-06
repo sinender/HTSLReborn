@@ -3,14 +3,8 @@ package llc.redstone.htslreborn.ui.components
 import io.wispforest.owo.ui.component.BoxComponent
 import io.wispforest.owo.ui.component.UIComponents
 import io.wispforest.owo.ui.container.FlowLayout
-import io.wispforest.owo.ui.core.Color
-import io.wispforest.owo.ui.core.CursorStyle
-import io.wispforest.owo.ui.core.OwoUIGraphics
-import io.wispforest.owo.ui.core.Positioning
-import io.wispforest.owo.ui.core.Sizing
-import io.wispforest.owo.ui.core.UIComponent
+import io.wispforest.owo.ui.core.*
 import llc.redstone.htslreborn.ui.FileExplorer
-import llc.redstone.htslreborn.ui.FileExplorerHandler
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.resources.Identifier
 
@@ -19,9 +13,7 @@ abstract class ExplorerEntryComponent(
 ): FlowLayout(horizontalSizing, verticalSizing, Algorithm.HORIZONTAL) {
 
     init {
-        mouseEnter().subscribe {
-            cursorStyle(CursorStyle.HAND)
-        }
+        cursorStyle(CursorStyle.HAND)
     }
 
     abstract val icon: Identifier
@@ -44,9 +36,7 @@ abstract class ExplorerEntryComponent(
                     this@ExplorerEntryComponent.onMouseDown(click, bool)
                     this@ExplorerEntryComponent.onMouseDown(click, bool)
                 }
-                mouseEnter()?.subscribe {
-                    cursorStyle(CursorStyle.HAND)
-                }
+                cursorStyle(CursorStyle.HAND)
             }
         )
 
@@ -70,9 +60,7 @@ abstract class ExplorerEntryComponent(
                     this@ExplorerEntryComponent.onMouseDown(click, bool)
                     this@ExplorerEntryComponent.onMouseDown(click, bool)
                 }
-                mouseEnter()?.subscribe {
-                    cursorStyle(CursorStyle.HAND)
-                }
+                cursorStyle(CursorStyle.HAND)
             }
         )
 

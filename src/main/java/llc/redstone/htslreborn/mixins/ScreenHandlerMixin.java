@@ -10,6 +10,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -17,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //? if <26.1 {
 import net.minecraft.client.gui.GuiGraphics;
- 
+
 //?} else {
 /*import net.minecraft.client.gui.GuiGraphicsExtractor;
 *///?}
@@ -37,17 +38,30 @@ public class ScreenHandlerMixin extends Screen implements HandledScreenAccessor 
         super(title);
     }
 
+    @Unique
+    boolean menuRendered = false;
+
     //? if <26.1 {
     @Inject(method = "render", at = @At("HEAD"))
     public void htslreborn$render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
-        if (!FileExplorer.inActionGui() || !HTSLReborn.INSTANCE.getCONFIG().getShowFileExplorer()) return;
+        if (!FileExplorer.inActionGui() || !HTSLReborn.INSTANCE.getCONFIG().getShowFileExplorer()) {
+            if (menuRendered) FileExplorer.getINSTANCE().resetCursor();
+            menuRendered = false;
+            return;
+        }
         FileExplorer.getINSTANCE().render(context, mouseX, mouseY, deltaTicks);
+        menuRendered = true;
     }
     //? } else {
     /*@Inject(method="extractRenderState", at=@At("HEAD"))
     public void htslreborn$render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
-        if (!FileExplorer.inActionGui() || !HTSLReborn.INSTANCE.getCONFIG().getShowFileExplorer()) return;
+        if (!FileExplorer.inActionGui() || !HTSLReborn.INSTANCE.getCONFIG().getShowFileExplorer()) {
+            if (menuRendered) FileExplorer.getINSTANCE().resetCursor();
+            menuRendered = false;
+            return;
+        }
         FileExplorer.getINSTANCE().extractRenderState(context, mouseX, mouseY, deltaTicks);
+        menuRendered = true;
     }
     *///? }
 
