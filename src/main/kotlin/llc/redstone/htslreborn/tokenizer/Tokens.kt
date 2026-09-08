@@ -73,14 +73,14 @@ enum class PlaceholderShortcuts : TokenType {
 }
 
 fun StateBuilder.placeholderShortcuts() {
-    placeholderShortcuts("globalstat (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.GLOBAL_VAR
-    placeholderShortcuts("globalvar (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.GLOBAL_VAR
-    placeholderShortcuts("stat (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.PLAYER_VAR
-    placeholderShortcuts("var (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.PLAYER_VAR
-    placeholderShortcuts("teamstat +([^ )]*)? (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.TEAM_VAR
-    placeholderShortcuts("teamvar +([^ )]*)? (?:\"([^\"\r\n]*)\"|([^ )\r\n]*))") isToken PlaceholderShortcuts.TEAM_VAR
-    placeholderShortcuts("randomint +([^ )]*)? +?([^ )]*)?") isToken PlaceholderShortcuts.RANDOM_INT
-    placeholderShortcuts("randomdouble +([^ )]*)? +?([^ )]*)?") isToken PlaceholderShortcuts.RANDOM_DOUBLE
+    placeholderShortcuts("globalstat (?:\"([^\"\r\n]*)\"|([^ ,)\r\n]*))") isToken PlaceholderShortcuts.GLOBAL_VAR
+    placeholderShortcuts("globalvar (?:\"([^\"\r\n]*)\"|([^ ,)\r\n]*))") isToken PlaceholderShortcuts.GLOBAL_VAR
+    placeholderShortcuts("stat (?:\"([^\"\r\n]*)\"|([^ ,)\r\n]*))") isToken PlaceholderShortcuts.PLAYER_VAR
+    placeholderShortcuts("var (?:\"([^\"\r\n]*)\"|([^ ,)\r\n]*))") isToken PlaceholderShortcuts.PLAYER_VAR
+    placeholderShortcuts("teamstat +([^ ,)\r\n]*)? (?:\"([^\"\r\n]*)\"|([^ ,)\r\n]*))") isToken PlaceholderShortcuts.TEAM_VAR
+    placeholderShortcuts("teamvar +([^ ,)\r\n]*)? (?:\"([^\"\r\n]*)\"|([^ ,)\r\n]*))") isToken PlaceholderShortcuts.TEAM_VAR
+    placeholderShortcuts("randomint +([^ ,)\r\n]*)? +?([^ ,)\r\n]*)?") isToken PlaceholderShortcuts.RANDOM_INT
+    placeholderShortcuts("randomdouble +([^ ,)\r\n]*)? +?([^ ,)\r\n]*)?") isToken PlaceholderShortcuts.RANDOM_DOUBLE
     placeholderShortcuts("health") isToken PlaceholderShortcuts.HEALTH
     placeholderShortcuts("maxhealth") isToken PlaceholderShortcuts.MAX_HEALTH
     placeholderShortcuts("hunger") isToken PlaceholderShortcuts.HUNGER

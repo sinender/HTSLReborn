@@ -3,16 +3,14 @@ package llc.redstone.htslreborn
 import llc.redstone.htslreborn.parser.Parser
 import llc.redstone.htslreborn.parser.PreProcess
 import llc.redstone.htslreborn.tokenizer.Tokenizer
+import java.nio.file.Paths
 import kotlin.io.path.Path
 
 // Used primarily for testing the tokenizer and preprocessor
 fun main(args: Array<String>) {
-    val input = """
-        define stageid 1
-
-        var pb.ms = {"%var.player/s" + stageid + "pb.ms 9223372036854775807%"}
-    """.split("\n").joinToString("\n") { it.trim() }
-    val tokens = Tokenizer.tokenize(input)
+    val homePath = Paths.get(System.getProperty("user.home"))
+    val path = homePath.resolve("Desktop/test.htsl")
+    val tokens = Tokenizer.tokenize(path)
     println("Tokens:")
     tokens.forEach { println("${it.tokenType} -> ${it.string}") }
 

@@ -250,7 +250,7 @@ object PreProcess {
                             processedString = processedString.replace(loopVarNameRegex, loopIndex.toString())
                         }
 
-
+                        println(processedString)
                         processedTokens.addAll(retokenizeAtOriginalPosition(processedString, true, token))
                     }
 
